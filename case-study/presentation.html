@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Attention — GTM Engineering Case Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-2: #475569;
+    --ink-3: #94a3b8;
+    --line: #e2e8f0;
+    --line-2: #f1f5f9;
+    --bg-2: #fafafa;
+    --bg-3: #f8fafc;
+    --accent: #6E56CF;
+    --accent-2: #ede9fe;
+    --good: #16a34a;
+    --warn: #f59e0b;
+    --hot: #dc2626;
+    --tier-fp: #6E56CF;
+    --tier-trig: #f59e0b;
+    --tier-state: #0891b2;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  .deck {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+  }
+  .slide {
+    scroll-snap-align: start;
+    min-height: 100vh;
+    padding: 56px 80px 56px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .meta {
+    position: absolute;
+    top: 28px;
+    left: 80px;
+    right: 80px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--ink-3);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .meta .brand { font-weight: 700; color: var(--ink); letter-spacing: 0.08em; }
+  .meta .num { font-variant-numeric: tabular-nums; color: var(--accent); font-weight: 600; }
+  .slide-content {
+    margin-top: 40px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .slide-content.center { justify-content: center; }
+  .eyebrow {
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+  h1.headline {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.05;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .subhead {
+    font-size: 19px;
+    color: var(--ink-2);
+    line-height: 1.45;
+    max-width: 1000px;
+    margin: 0 0 32px;
+    font-weight: 400;
+  }
+  .subhead strong { color: var(--ink); font-weight: 600; }
+
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
+    justify-content: center;
+    padding-top: 80px;
+  }
+  .cover .meta { position: static; margin-bottom: 40px; padding: 0; }
+  .cover .accent-bar {
+    width: 64px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 3px;
+    margin-bottom: 32px;
+  }
+  .cover h1 {
+    font-size: 76px;
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 0 0 20px;
+  }
+  .cover h1 .pop { color: var(--accent); }
+  .cover .tag {
+    font-size: 22px;
+    color: var(--ink-2);
+    margin: 0 0 48px;
+    font-weight: 400;
+    max-width: 800px;
+  }
+  .cover .credit {
+    margin-top: auto;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    color: var(--ink-3);
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .cover .credit .name { color: var(--ink); font-weight: 700; font-size: 18px; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { text-align: left; padding: 10px 14px; vertical-align: top; }
+  th {
+    background: var(--bg-3);
+    color: var(--ink-2);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--line);
+  }
+  td { border-bottom: 1px solid var(--line-2); }
+  tr:last-child td { border-bottom: none; }
+  .table-wrap { background: white; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+  .num { text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .weight { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  /* CATEGORY ROWS */
+  .cat-row td {
+    background: var(--ink);
+    color: white;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 14px;
+  }
+  .cat-row.fp td { background: linear-gradient(90deg, var(--tier-fp), #8B72E0); }
+  .cat-row.trig td { background: linear-gradient(90deg, var(--tier-trig), #fb923c); }
+  .cat-row.state td { background: linear-gradient(90deg, var(--tier-state), #0ea5e9); }
+
+  /* GRIDS */
+  .grid { display: grid; gap: 20px; }
+  .grid-2 { grid-template-columns: 1fr 1fr; }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+
+  .card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .card.accent { background: var(--accent-2); border-color: #c4b5fd; }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+  }
+  .card .big {
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+    margin: 4px 0 8px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .card p { margin: 4px 0; color: var(--ink-2); font-size: 13.5px; line-height: 1.5; }
+  .card ul { margin: 6px 0 0; padding-left: 18px; color: var(--ink-2); font-size: 13.5px; line-height: 1.55; }
+  .card ul li { margin-bottom: 2px; }
+  .card .label {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+
+  /* MATRIX */
+  .matrix-wrap { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 6px; align-items: stretch; }
+  .matrix-axis-y { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+  .matrix-cell {
+    padding: 24px 20px;
+    border-radius: 12px;
+    border: 2px solid;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .matrix-cell .tier-name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; opacity: 0.8; }
+  .matrix-cell .tier-action { font-size: 18px; font-weight: 700; line-height: 1.2; margin-bottom: 6px; }
+  .matrix-cell .tier-volume { font-size: 12px; opacity: 0.85; }
+  .cell-1 { background: #ecfdf5; border-color: #16a34a; color: #14532d; }
+  .cell-2 { background: #fef3c7; border-color: #f59e0b; color: #78350f; }
+  .cell-3 { background: #dbeafe; border-color: #0891b2; color: #0c4a6e; }
+  .cell-4 { background: #f1f5f9; border-color: #94a3b8; color: #334155; }
+  .matrix-headers { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  .matrix-header { padding: 10px; text-align: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
+  .matrix-row-label { display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-2); padding: 0 8px; }
+
+  /* ARCHITECTURE DIAGRAM (slide 5) */
+  .arch-diagram { margin: 12px 0 18px; display: flex; flex-direction: column; gap: 14px; }
+  .arch-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .arch-inputs { justify-content: flex-start; }
+  .arch-outputs { justify-content: flex-end; gap: 14px; }
+  .arch-node {
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.3;
+    text-align: center;
+    min-width: 130px;
+  }
+  .arch-node.source { background: #ecfeff; border: 2px solid #0891b2; color: #0c4a6e; }
+  .arch-node.python-step { background: #f0fdf4; border: 2px solid #16a34a; color: #14532d; }
+  .arch-node.output { background: #fffbeb; border: 2px solid #f59e0b; color: #78350f; padding: 9px 14px; }
+  .arch-arrow { font-size: 20px; color: var(--ink-3); font-weight: 700; }
+
+  .arch-orchestrator {
+    border: 2.5px solid var(--accent);
+    border-radius: 14px;
+    background: linear-gradient(180deg, var(--accent-2) 0%, white 30%);
+    overflow: hidden;
+  }
+  .arch-orchestrator-header {
+    background: var(--accent);
+    color: white;
+    padding: 11px 18px;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .agent-tag {
+    background: white;
+    color: var(--accent);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+  .orchestrator-role {
+    margin-left: auto;
+    opacity: 0.9;
+    font-weight: 500;
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+  }
+  .arch-stages {
+    display: grid;
+    grid-template-columns: 1fr 28px 1fr 28px 1fr;
+    gap: 0;
+    padding: 18px;
+    align-items: stretch;
+  }
+  .arch-stage {
+    background: white;
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+  }
+  .arch-stage.stage-python { border-top: 4px solid #16a34a; }
+  .arch-stage.stage-hybrid { border-top: 4px solid var(--hot); }
+  .stage-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .stage-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .type-tag {
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .type-tag.python { background: #dcfce7; color: #14532d; }
+  .type-tag.hybrid { background: #fee2e2; color: #7f1d1d; }
+  .stage-title {
+    margin: 2px 0 6px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .stage-desc {
+    margin: 0;
+    font-size: 12px;
+    color: var(--ink-2);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .llm-tag {
+    margin-top: 10px;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    align-self: flex-start;
+  }
+  .llm-tag.inline {
+    background: #fef3c7;
+    color: #78350f;
+    border: 1px dashed #f59e0b;
+  }
+  .llm-tag.agent {
+    background: var(--accent);
+    color: white;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .arch-stage-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: var(--ink-3);
+    font-weight: 700;
+  }
+
+  /* TIMELINE */
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .week-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 18px;
+    border-top: 4px solid var(--accent);
+  }
+  .week-card .week-num { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
+  .week-card h4 { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
+  .week-card ul { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
+  .week-card ul li { margin-bottom: 3px; }
+
+  /* FOOTNOTES + UTIL */
+  .footnote { font-size: 12px; color: var(--ink-3); margin-top: 16px; font-style: italic; }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .pill.fp { background: var(--accent-2); color: var(--accent); }
+  .pill.trig { background: #fef3c7; color: #92400e; }
+  .pill.state { background: #cffafe; color: #155e75; }
+  .pill.hot { background: #fef2f2; color: var(--hot); }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--bg-3); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+  .formula { font-family: 'JetBrains Mono', monospace; background: var(--ink); color: white; padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+
+  .key-callout {
+    background: var(--accent-2);
+    border-left: 4px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+    max-width: 1100px;
+  }
+  .key-callout strong { color: var(--accent); }
+
+  /* LEAD TABLE MOCK (slide 6) */
+  .lead-mock {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 16px 0 18px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  }
+  .lead-mock-header {
+    background: linear-gradient(90deg, var(--ink) 0%, #1f2937 100%);
+    color: white;
+    padding: 10px 16px;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .lead-mock-header .source-tag {
+    background: rgba(255,255,255,0.15);
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .lead-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .lead-table th {
+    background: var(--bg-3);
+    color: var(--ink-2);
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  .lead-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--line-2);
+    vertical-align: middle;
+    font-size: 11.5px;
+  }
+  .lead-table tr:last-child td { border-bottom: none; }
+  .lead-table .score {
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .role-tag {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #14532d;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+  }
+  .auto-tag {
+    display: inline-block;
+    background: #fef3c7;
+    color: #78350f;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .check { color: #16a34a; font-weight: 700; font-size: 14px; }
+  .dash { color: var(--ink-3); font-weight: 700; }
+  .signal-icon { margin-right: 4px; }
+  .cadence-list { font-size: 11.5px; width: 100%; }
+  .cadence-list td { padding: 3px 0; border: none; color: var(--ink); }
+  .ai-tag {
+    display: inline-block;
+    background: var(--accent-2);
+    color: var(--accent);
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+    white-space: nowrap;
+  }
+  .cadence-section-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cadence-section-label.templated { color: #14532d; }
+  .cadence-section-label.ai-assisted { color: var(--accent); }
+  .hook-preview {
+    background: linear-gradient(135deg, var(--accent-2) 0%, #f5f3ff 100%);
+    border: 1px solid #c4b5fd;
+    border-left: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 14px 0 0;
+  }
+  .hook-label {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .hook-body {
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.45;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+  .hook-meta {
+    font-size: 10.5px;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .hook-meta code { font-size: 10px; padding: 1px 4px; }
+
+  /* PRINT */
+  @media print {
+    body { background: white; }
+    .deck { overflow: visible; height: auto; }
+    .slide { page-break-after: always; min-height: auto; height: 100vh; }
+    .meta { position: absolute; }
+  }
+</style>
+</head>
+<body>
+<main class="deck">
+
+<!-- ========== SLIDE 1 — COVER ========== -->
+<section class="slide cover">
+  <div class="meta">
+    <span class="brand">ATTENTION</span>
+    <span>GTM Engineering Case Study</span>
+  </div>
+
+  <div class="accent-bar"></div>
+
+  <h1>Signal-Based Outreach<br>System for <span class="pop">Attention.</span></h1>
+
+  <div class="credit">
+    <div>
+      <div class="name">Alice Doglioli</div>
+      <div>GTM Engineering · Final-round case study</div>
+    </div>
+    <div>2026</div>
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 2 — THE THESIS ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">ATTENTION · GTM ENGINEERING</span>
+    <span>Slide <span class="num">02 / 07</span></span>
+  </div>
+
+  <div class="slide-content center">
+    <p class="eyebrow">The Thesis</p>
+    <h1 class="headline">1M companies → 50k ICP → ~250 actions/week.</h1>
+    <p class="subhead"><strong>Track 10 buying signals weekly.</strong> Score on a 100-point scale (Intent + multi-signal bonus). Cross with Fit Score. Route via 2×2 matrix to <strong>4 tiers</strong> — SDR-personalized, automated outbound, watchlist, or skip. Cadence library prescribes the message; AI generates only the first hook from signal evidence.</p>
+
+    <div class="grid grid-4" style="margin-top: 20px;">
+      <div class="card">
+        <div class="label">Part 1</div>
+        <h3>Signals</h3>
+        <p>10 weighted signals across 3 categories — first-party intent, trigger events, state.</p>
+      </div>
+      <div class="card">
+        <div class="label">Part 2</div>
+        <h3>Scoring</h3>
+        <p>Fit × Intent matrix. Multi-signal bonus rewards convergence.</p>
+      </div>
+      <div class="card">
+        <div class="label">Part 3</div>
+        <h3>System</h3>
+        <p>Claude Code orchestrator + 3 Python pipeline stages + 1 LLM hook agent. Two SDR surfaces.</p>
+      </div>
+      <div class="card">
+        <div class="label">Part 4</div>
+        <h3>Rollout</h3>
+        <p>30-day build → 4-week pilot → A/B vs. control. Reply rate is the north star.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 3 — PART 1: 10 SIGNALS ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">PART 1 · BUYING SIGNALS</span>
+    <span>Slide <span class="num">03 / 07</span></span>
+  </div>
+
+  <div class="slide-content">
+    <h1 class="headline" style="margin-bottom: 28px;">10 signals · 3 categories · weights sum to 100.</h1>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th class="num" style="width: 24px;">#</th>
+            <th>Signal</th>
+            <th class="num" style="width: 44px;">Type</th>
+            <th>Why it matters (one line)</th>
+            <th class="num" style="width: 56px;">Weight</th>
+            <th style="width: 110px;">Volume / mo</th>
+            <th style="width: 130px;">Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="cat-row fp"><td colspan="7">First-party intent: 46 / 100 (the buyer shows themselves to us)</td></tr>
+          <tr><td class="num">1</td><td><strong>Website visits</strong></td><td class="num">P</td><td>Multiple visits to attention.com with persona-matched deanonymization. Buyer is actively shortlisting us.</td><td class="num weight">20</td><td>~100 to 400</td><td>RB2B</td></tr>
+          <tr><td class="num">2</td><td><strong>Content engagement</strong></td><td class="num">P</td><td>Webinar, podcast, or event attendance. 20 to 40% attendee-to-qualified-lead conversion (industry data).</td><td class="num weight">14</td><td>~200 to 800</td><td>Goldcast</td></tr>
+          <tr><td class="num">3</td><td><strong>Ad interaction</strong></td><td class="num">P</td><td>LinkedIn or Reddit ad engagement. Intent-driven outreach lifts conversion up to 93%.</td><td class="num weight">8</td><td>~200 to 800</td><td>LinkedIn Campaign Manager</td></tr>
+          <tr><td class="num">4</td><td><strong>Slack community</strong></td><td class="num">P</td><td>Pavilion, RevGenius, or Modern Sales Pros. Community engagement precedes purchase by 3 to 6 weeks.</td><td class="num weight">4</td><td>~100 to 300</td><td>Amplemarket</td></tr>
+
+          <tr class="cat-row trig"><td colspan="7">Trigger events: 34 / 100 (a buying window is opening)</td></tr>
+          <tr><td class="num">5</td><td><strong>Executive change / Key role</strong></td><td class="num">P</td><td>VP Sales, CRO, or RevOps hired or promoted in the last 90 days. Re-evaluates the entire stack.</td><td class="num weight">12</td><td>~2,500 to 3,500</td><td>Amplemarket</td></tr>
+          <tr><td class="num">6</td><td><strong>Sales team scaling</strong></td><td class="num">C</td><td>3 or more AE or SDR roles posted in the last 30 days. Ramp pain hits months 3 to 6, exactly Attention's wedge.</td><td class="num weight">11</td><td>~3,000 to 5,000</td><td>Amplemarket</td></tr>
+          <tr><td class="num">7</td><td><strong>Buyer pain / topical engagement</strong></td><td class="num">P</td><td>Public ICP-role post on coaching, forecasting, ramp, or AI tooling. Direct verbalized intent.</td><td class="num weight">11</td><td>~500 to 1,500</td><td>LinkedIn (Sales Nav)</td></tr>
+
+          <tr class="cat-row state"><td colspan="7">State, displacement, or budget: 20 / 100 (deal economics work)</td></tr>
+          <tr><td class="num">8</td><td><strong>Competitor usage</strong></td><td class="num">C</td><td>Hiring requires Gong, Chorus, or Clari experience. Pure displacement opportunity.</td><td class="num weight">7</td><td>~1,500 to 2,500</td><td>Amplemarket</td></tr>
+          <tr><td class="num">9</td><td><strong>Competitor churn window</strong></td><td class="num">C</td><td>G2 review drop, competitor layoffs, or contract-end. Buying window already opening.</td><td class="num weight">7</td><td>~50 to 200</td><td>G2</td></tr>
+          <tr><td class="num">10</td><td><strong>Recent funding</strong></td><td class="num">C</td><td>Series A or later in the last 6 months. Budget unlocked, mandate to deploy toward revenue.</td><td class="num weight">6</td><td>~200 to 400</td><td>Crunchbase</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="footnote">Volumes are order-of-magnitude estimates from base rates × ICP filter; real numbers measured in pilot. Phase 2: backtest weights against Attention's closed-won data via logistic regression.</p>
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 4 — PART 2: SCORING ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">PART 2 · SCORING & TIERING</span>
+    <span>Slide <span class="num">04 / 07</span></span>
+  </div>
+
+  <div class="slide-content">
+    <h1 class="headline">Two scores. One 2×2 matrix. Four tiers.</h1>
+    <p class="subhead">Framework: <strong>Fit × Intent.</strong> Intent (weekly) measures buying-window opening. Fit (monthly) measures deal economics, proxy for ACV potential.</p>
+
+    <div class="grid grid-2" style="gap: 32px;">
+
+      <div>
+        <div class="card" style="margin-bottom: 14px;">
+          <div class="label">Intent Score · weekly · /100</div>
+          <div class="formula" style="margin: 8px 0;">intent = Σ signal_weights + bonus</div>
+          <p style="margin-top:8px;"><strong>Multi-signal bonus:</strong> 2 sig → +5 · 3 sig → +12 · 4+ → +25</p>
+          <p><strong>Bands:</strong> High ≥ 30 · Low &lt; 30</p>
+        </div>
+        <div class="card">
+          <div class="label">Fit Score · monthly · /100</div>
+          <ul style="margin-top: 6px;">
+            <li><strong>Industry tier (50):</strong> SaaS/fintech 50 · B2B services 30 · others 15</li>
+            <li><strong>Sales motion intensity (30):</strong> sales-led ≥10% reps 30 · hybrid 20 · sales-light 5</li>
+            <li><strong>Growth stage (20):</strong> Series B+ 20 · Series A 12 · earlier 5</li>
+          </ul>
+          <p style="margin-top:8px;"><strong>Bands:</strong> High ≥ 70 · Low &lt; 70</p>
+        </div>
+      </div>
+
+      <div>
+        <div class="matrix-headers">
+          <div></div>
+          <div class="matrix-header">High Intent (≥30)</div>
+          <div class="matrix-header">Low Intent (&lt;30)</div>
+        </div>
+        <div class="matrix-wrap" style="margin-bottom: 6px;">
+          <div class="matrix-row-label">High Fit<br>(≥70)</div>
+          <div class="matrix-cell cell-1">
+            <div class="tier-name">Tier 1</div>
+            <div class="tier-action">SDR · personalized</div>
+          </div>
+          <div class="matrix-cell cell-3">
+            <div class="tier-name">Tier 3</div>
+            <div class="tier-action">Watchlist</div>
+          </div>
+        </div>
+        <div class="matrix-wrap">
+          <div class="matrix-row-label">Low Fit<br>(&lt;70)</div>
+          <div class="matrix-cell cell-2">
+            <div class="tier-name">Tier 2</div>
+            <div class="tier-action">Auto-outbound</div>
+          </div>
+          <div class="matrix-cell cell-4">
+            <div class="tier-name">Tier 4</div>
+            <div class="tier-action">Skip</div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 5 — PART 3a: ARCHITECTURE ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">PART 3 · SYSTEM ARCHITECTURE</span>
+    <span>Slide <span class="num">05 / 07</span></span>
+  </div>
+
+  <div class="slide-content">
+    <h1 class="headline" style="margin-bottom: 8px;">1 orchestrator + 3 Python stages + 1 LLM hook agent.</h1>
+    <p style="font-size: 13px; color: var(--ink-2); margin: 0 0 20px; font-weight: 500;">Scheduled cron · runs every Monday at 6 AM · end-to-end in under 30 minutes.</p>
+
+    <div class="arch-diagram">
+
+      <!-- Inputs feeding the orchestrator -->
+      <div class="arch-row arch-inputs">
+        <div class="arch-node source">📥 Salesforce<br>50k ICP universe</div>
+        <div class="arch-arrow">→</div>
+        <div class="arch-node python-step">Exclusion Filter<br>(Python · deterministic)</div>
+        <div class="arch-arrow">→</div>
+      </div>
+
+      <!-- Orchestrator wrapping the 3 stages -->
+      <div class="arch-orchestrator">
+        <div class="arch-orchestrator-header">
+          <span class="agent-tag">⚡ AGENT 1</span>
+          <span><strong>Claude Code Orchestrator</strong></span>
+          <span class="orchestrator-role">runs every Monday 6 AM · retry · cross-stage supervision</span>
+        </div>
+        <div class="arch-stages">
+          <div class="arch-stage stage-python">
+            <div class="stage-header">
+              <span class="stage-tag">Stage 1</span>
+              <span class="type-tag python">Python ETL</span>
+            </div>
+            <h3 class="stage-title">Signal Collector</h3>
+            <p class="stage-desc">Fans 10+ APIs in parallel: Clay · RB2B · GA4 · LinkedIn Ads · Reddit Ads · Common Room · Crunchbase · G2 · Amplemarket · SF — writes to Snowflake (append-only).</p>
+            <div class="llm-tag inline">⚡ inline LLM classifier · sub-type (#5, #7)</div>
+          </div>
+          <div class="arch-stage-arrow">→</div>
+          <div class="arch-stage stage-python">
+            <div class="stage-header">
+              <span class="stage-tag">Stage 2</span>
+              <span class="type-tag python">Pure Python</span>
+            </div>
+            <h3 class="stage-title">Scorer</h3>
+            <p class="stage-desc">Reads Snowflake + SF metadata. Computes Fit + Intent + multi-signal bonus. Applies 2×2 matrix → Tier 1/2/3/4. Pure deterministic math; writes scores back to Salesforce.</p>
+          </div>
+          <div class="arch-stage-arrow">→</div>
+          <div class="arch-stage stage-hybrid">
+            <div class="stage-header">
+              <span class="stage-tag">Stage 3</span>
+              <span class="type-tag hybrid">Python + LLM</span>
+            </div>
+            <h3 class="stage-title">Distributor</h3>
+            <p class="stage-desc"><strong>Tier 1 (SDR-owned):</strong> LLM Hook Agent generates 1–2 sentence opener per account from signal evidence; written to SF <code style="font-size:10px;background:rgba(0,0,0,0.05);padding:0 3px;border-radius:3px;">ai_hook</code> custom field; pre-fills Amplemarket sequence step 1 when SDR marks Yes. <strong>Tier 2 (Auto-outbound):</strong> Python pushes contact to matching templated Amplemarket sequence with custom-field tokens. No LLM.</p>
+            <div class="llm-tag agent">⚡ Agent 2 · LLM Hook Agent (Tier 1 only)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="arch-row arch-outputs">
+        <div class="arch-arrow">→</div>
+        <div class="arch-node output">👁️ SF Lead View</div>
+        <div class="arch-node output">📊 Google Sheet</div>
+        <div class="arch-node output">📤 Amplemarket</div>
+      </div>
+
+    </div>
+
+    <p class="footnote">Hard exclusion filter (pre-scoring) drops 5 to 8% of accounts: customers, active opps, churned less than 6 months ago, layoffs, already engaged in Amplemarket. Scoreable pool is roughly 45,000 to 47,000. Each stage idempotent and checkpointed. Snowflake is the append-only signal store, enabling Phase 2 ML training data. Total Monday runtime: under 30 minutes.</p>
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 6 — PART 3b: GTM INTEGRATION ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">PART 3 · GTM INTEGRATION</span>
+    <span>Slide <span class="num">06 / 07</span></span>
+  </div>
+
+  <div class="slide-content">
+    <h1 class="headline" style="margin-bottom: 22px;">What the SDR sees Monday morning.</h1>
+
+    <div class="lead-mock">
+      <div class="lead-mock-header">
+        <span>Salesforce Lead View · Google Sheet · same 8 columns, one source of truth (SF write-back)</span>
+        <span class="source-tag">Refreshed Mon 6:30 AM</span>
+      </div>
+      <table class="lead-table">
+        <thead>
+          <tr>
+            <th>Persona</th>
+            <th>Company</th>
+            <th>Contact</th>
+            <th>Strongest signal</th>
+            <th>Owner</th>
+            <th>Cadence suggestion</th>
+            <th>Add to seq.</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CRO</td>
+            <td><strong>Acme Sales Co.</strong></td>
+            <td>Jane Doe</td>
+            <td>Website visits · /demo + /pricing</td>
+            <td>Alice D. <span class="role-tag">SDR</span></td>
+            <td><strong>Personalized</strong> · AI hook ready</td>
+            <td><span class="check">Yes</span></td>
+            <td class="score">89</td>
+          </tr>
+          <tr>
+            <td>VP Sales</td>
+            <td><strong>NorthStar Logistics</strong></td>
+            <td>John Smith</td>
+            <td>Competitor churn · G2 drop on Gong</td>
+            <td><span class="auto-tag">Automated outreach</span></td>
+            <td><strong>Competitor churn</strong></td>
+            <td><span class="check">Yes</span></td>
+            <td class="score">55</td>
+          </tr>
+          <tr>
+            <td>RevOps Lead</td>
+            <td><strong>BrightPath SaaS</strong></td>
+            <td>Sara Lee</td>
+            <td>Buyer pain · LinkedIn post on forecast</td>
+            <td>Alice D. <span class="role-tag">SDR</span></td>
+            <td><span class="dash">—</span></td>
+            <td><span class="dash">No</span></td>
+            <td class="score">47</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="hook-preview">
+      <div class="hook-label">AI hook preview · Acme Sales Co.</div>
+      <div class="hook-body">"Hi Jane — your team checked /demo and /pricing this week. 45 days in as CRO + 80 reps scaling… most new sales leaders at that mark end up auditing the call-intel stack within Q1. Curious what you're seeing."</div>
+      <div class="hook-meta">Generated by Stage 3 LLM Hook Agent · stored in SF custom field <code>ai_hook</code> · pre-fills Amplemarket step 1 when SDR marks Yes · SDR composes the rest. Hook is generated only for SDR-owned rows; if SDR marks "No," the cadence cell stays blank.</div>
+    </div>
+
+    <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
+      <div class="card">
+        <div class="label">Salesforce Lead View</div>
+        <h3 style="margin-bottom: 6px;">Native, in-CRM</h3>
+        <p>Per-rep filtered list view, lives inside the SDR's existing Salesforce home. Used for daily triage, account-record context, mass-update. AI hook visible on the account detail page. Read-only on the 8 columns.</p>
+      </div>
+      <div class="card accent">
+        <div class="label">Google Sheet</div>
+        <h3 style="margin-bottom: 6px;">Editable · workflow by owner</h3>
+        <p style="margin-top: 4px;"><strong>Owner = SDR (Tier 1):</strong> AI hook pre-filled in Amplemarket step 1; SDR writes the email in their own voice using the hook + signal context.</p>
+        <p style="margin-top: 4px;"><strong>Owner = Automated (Tier 2):</strong> Apps Script pushes contact to the matching templated cadence from the library. SDR can reroute by editing the cadence cell before marking Yes.</p>
+      </div>
+      <div class="card">
+        <div class="label">Cadence library · 10 templated</div>
+        <div class="cadence-section-label templated" style="font-size: 9.5px;">Auto-outreach (Tier 2) only — generic Amplemarket sequence + custom-field tokens</div>
+        <table class="cadence-list" style="margin-bottom: 10px;">
+          <tr><td>Website visits</td><td>Sales leadership change</td></tr>
+          <tr><td>Webinar / event followup</td><td>Sales team scaling</td></tr>
+          <tr><td>Ad interaction followup</td><td>Buyer pain / topical</td></tr>
+          <tr><td>Slack community</td><td>Competitor usage</td></tr>
+          <tr><td>Competitor churn</td><td>Recent funding</td></tr>
+        </table>
+        <div class="cadence-section-label ai-assisted" style="font-size: 9.5px;">Tier 1 (SDR) → Personalized · AI hook + SDR composition (no library cadence)</div>
+      </div>
+    </div>
+
+    <p class="footnote"><strong>Strongest signal</strong> = highest-weight signal fired this week (Part 1 ranking) → drives the cadence suggestion. <strong>Owner</strong> drives the workflow: SDR (Tier 1) → AI hook + personal craft. Automated (Tier 2) → templated cadence library auto-fires. <strong>Score</strong> = combined Intent × Fit.</p>
+  </div>
+</section>
+
+
+<!-- ========== SLIDE 7 — PART 4: ROLLOUT, MEASUREMENT, IMPROVEMENT ========== -->
+<section class="slide">
+  <div class="meta">
+    <span class="brand">PART 4 · ROLLOUT & MEASUREMENT</span>
+    <span>Slide <span class="num">07 / 07</span></span>
+  </div>
+
+  <div class="slide-content">
+    <h1 class="headline" style="margin-bottom: 22px;">30-day plan · KPIs · feedback · Phase 2.</h1>
+
+    <div class="timeline">
+      <div class="week-card">
+        <div class="week-num">Week 1</div>
+        <h4>Talk to the sales team</h4>
+        <ul>
+          <li>How do they cut territory today?</li>
+          <li>How do they run outbound today — what works, what's broken?</li>
+          <li>Audit where the data sits: SF objects, Clay workflows, Snowflake schemas, Amplemarket setup</li>
+          <li>Walk the team through the project to validate the approach</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 2</div>
+        <h4>Build &amp; test myself</h4>
+        <ul>
+          <li>Wire Stage 1 — signal collection across 10+ APIs</li>
+          <li>Wire Stage 2 — scoring math + 2×2 matrix</li>
+          <li>Wire Stage 3 — LLM hook agent + Amplemarket cadence connections</li>
+          <li>Test end-to-end on a 100-account sample · validate AI hook quality</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 3</div>
+        <h4>First real-time test</h4>
+        <ul>
+          <li><strong>Monday:</strong> full pipeline runs on the pilot territory</li>
+          <li>Daily 15-min standup with pilot SDRs</li>
+          <li>Iterate on signals, hooks, cadences based on SDR feedback</li>
+          <li>Friday: first weekly report</li>
+        </ul>
+      </div>
+      <div class="week-card">
+        <div class="week-num">Week 4</div>
+        <h4>System ready</h4>
+        <ul>
+          <li>Pipeline running smoothly · no critical bugs</li>
+          <li>Onboard remaining SDRs in pilot territory</li>
+          <li>Lock the measurement dashboard (Looker / Mode → Snowflake + SF)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid grid-3" style="margin-top: 22px;">
+      <div class="card">
+        <div class="label">Measurement · 5 KPIs</div>
+        <ul>
+          <li><strong>Scored accounts → meetings booked</strong> — overall system conversion</li>
+          <li><strong>Reply rate</strong> per cadence + per signal — message resonance + signal quality</li>
+          <li><strong>Sequencing rate</strong> (% of Tier 1 actually actioned by SDRs) — tool adoption</li>
+          <li><strong>Coverage %</strong> (% of accounts firing ≥1 signal weekly) — pipeline health</li>
+          <li><strong>Pipeline → closed-won</strong> (90d cohort) — revenue impact</li>
+        </ul>
+        <p style="font-size: 11px; color: var(--ink-3); margin-top: 8px; line-height: 1.4;">Tracked in a Looker (or Mode) dashboard pulling from Snowflake (signal + scoring history) and Salesforce (outcomes + adoption). Refresh daily.</p>
+      </div>
+      <div class="card">
+        <div class="label">Feedback loops · day 1</div>
+        <ul>
+          <li><strong>Cadence:</strong> per-cadence reply rate (from Amplemarket webhooks) → A/B variants, retire weak ones</li>
+          <li><strong>Agent:</strong> LLM hook quality tracked per reply → prompt tuning</li>
+          <li><strong>Outcome:</strong> AE tags signal that drove closed-won → trains Phase 2 weight calibration</li>
+          <li><strong>Human:</strong> weekly SDR check-in · monthly leadership · quarterly CEO/CRO</li>
+        </ul>
+      </div>
+      <div class="card accent">
+        <div class="label">Phase 2 · scoring on real data</div>
+        <h3 style="margin-bottom: 6px;">Past + ongoing data → smarter weights</h3>
+        <p>After 90 days of pilot data, replace the heuristic Part 1 weights with empirical ones learned via logistic regression on <code style="background:rgba(0,0,0,0.05);padding:1px 4px;border-radius:3px;font-size:11px;">signals fired → won/lost</code>.</p>
+        <p style="margin-top: 6px;">Refresh quarterly as more outcomes accumulate.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>
