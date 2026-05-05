@@ -3,21 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <title>Attention — Signal-Based Outreach System Architecture</title>
-<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
 <style>
   :root {
     --bg: #0b0d12;
     --bg-2: #14171f;
     --card: #1a1e29;
     --border: #2a2f3d;
+    --border-bright: #3d4356;
     --text: #e8eaed;
     --text-2: #9aa0aa;
-    --accent: #5b8def;
-    --accent-2: #7c5cff;
-    --s-tier: #f5b942;
-    --a-tier: #4ec38b;
-    --b-tier: #5b8def;
-    --hot: #ff5b5b;
+    --text-3: #6b7280;
+
+    --agent: #7c5cff;
+    --agent-bg: rgba(124, 92, 255, 0.10);
+    --agent-border: rgba(124, 92, 255, 0.45);
+
+    --python: #4ec38b;
+    --python-bg: rgba(78, 195, 139, 0.08);
+    --python-border: rgba(78, 195, 139, 0.45);
+
+    --data: #5b8def;
+    --data-bg: rgba(91, 141, 239, 0.08);
+    --data-border: rgba(91, 141, 239, 0.45);
+
+    --output: #f5b942;
+    --output-bg: rgba(245, 185, 66, 0.08);
+    --output-border: rgba(245, 185, 66, 0.45);
+
+    --t1: #16a34a;   /* Tier 1 — SDR personalized */
+    --t1-bg: rgba(22, 163, 74, 0.10);
+    --t1-border: rgba(22, 163, 74, 0.5);
+
+    --t2: #f59e0b;   /* Tier 2 — Automated */
+    --t2-bg: rgba(245, 158, 11, 0.10);
+    --t2-border: rgba(245, 158, 11, 0.5);
+
+    --t3: #0891b2;   /* Tier 3 — Watchlist */
+    --t3-bg: rgba(8, 145, 178, 0.10);
+    --t3-border: rgba(8, 145, 178, 0.5);
+
+    --t4: #6b7280;   /* Tier 4 — Skip */
+    --t4-bg: rgba(107, 114, 128, 0.10);
+    --t4-border: rgba(107, 114, 128, 0.45);
   }
   * { box-sizing: border-box; }
   body {
@@ -25,554 +52,573 @@
     font-family: -apple-system, "Inter", "Helvetica Neue", Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
-    line-height: 1.55;
+    line-height: 1.5;
     font-size: 14px;
   }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 32px 32px 80px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.92em; background: rgba(255,255,255,0.05); padding: 1px 6px; border-radius: 3px; }
 
-  header { padding-bottom: 16px; border-bottom: 1px solid var(--border); margin-bottom: 32px; }
-  header h1 { font-size: 26px; margin: 0 0 6px; letter-spacing: -0.01em; }
-  header .sub { color: var(--text-2); font-size: 14px; }
-  header .pill { display: inline-block; padding: 2px 10px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--border); font-size: 12px; color: var(--accent); margin-right: 8px; }
+  .page { max-width: 1280px; margin: 0 auto; padding: 36px 36px 80px; }
 
-  section { margin-bottom: 48px; }
-  section h2 { font-size: 20px; margin: 0 0 4px; letter-spacing: -0.01em; }
-  section h2 .num { color: var(--accent); font-variant-numeric: tabular-nums; margin-right: 8px; }
-  section .lede { color: var(--text-2); margin: 0 0 18px; font-size: 14px; max-width: 800px; }
+  /* HEADER */
+  header { padding-bottom: 22px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+  header .meta { display: flex; align-items: center; gap: 10px; color: var(--text-3); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; font-weight: 600; }
+  header .pill { padding: 3px 10px; border-radius: 20px; background: var(--agent-bg); color: var(--agent); border: 1px solid var(--agent-border); letter-spacing: 0.04em; }
+  header h1 { font-size: 30px; margin: 0 0 10px; letter-spacing: -0.015em; font-weight: 800; }
+  header .sub { color: var(--text-2); font-size: 15px; margin: 0; max-width: 900px; line-height: 1.55; }
+  header .sub strong { color: var(--text); font-weight: 600; }
 
-  .diagram {
-    background: var(--bg-2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    overflow-x: auto;
-  }
-  .mermaid { font-family: inherit; }
+  /* LEGEND */
+  .legend { display: flex; gap: 22px; padding: 12px 0 28px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); }
+  .legend .item { display: flex; align-items: center; gap: 7px; }
+  .legend .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid; }
+  .swatch.agent { background: var(--agent-bg); border-color: var(--agent-border); }
+  .swatch.python { background: var(--python-bg); border-color: var(--python-border); }
+  .swatch.data { background: var(--data-bg); border-color: var(--data-border); }
+  .swatch.output { background: var(--output-bg); border-color: var(--output-border); }
 
-  .grid { display: grid; gap: 14px; }
-  .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  .grid-2 { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 900px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+  /* DIAGRAM SHELL */
+  .diagram { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+  .arrow-down { width: 2px; height: 22px; background: var(--border-bright); position: relative; }
+  .arrow-down::after { content: ""; position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 7px solid var(--border-bright); }
 
-  .card {
+  /* GENERIC NODE */
+  .node {
+    border: 1.5px solid var(--border);
     background: var(--card);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: center;
+    min-width: 280px;
+    max-width: 720px;
+  }
+  .node .badge {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+  }
+  .node .title { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+  .node .meta-line { font-size: 12px; color: var(--text-2); margin: 1px 0; }
+  .node .result { color: var(--output); font-size: 12px; font-weight: 600; margin-top: 6px; }
+
+  .node.agent { background: var(--agent-bg); border-color: var(--agent-border); }
+  .node.agent .badge { background: var(--agent); color: white; }
+  .node.python { background: var(--python-bg); border-color: var(--python-border); }
+  .node.python .badge { background: var(--python); color: #06140d; }
+  .node.data { background: var(--data-bg); border-color: var(--data-border); }
+  .node.data .badge { background: var(--data); color: white; }
+  .node.output { background: var(--output-bg); border-color: var(--output-border); }
+  .node.output .badge { background: var(--output); color: #1a1300; }
+
+  /* TRIGGER ROW */
+  .trigger-row { display: flex; align-items: center; gap: 14px; }
+  .trigger-row .arrow-right { width: 22px; height: 2px; background: var(--border-bright); position: relative; }
+  .trigger-row .arrow-right::after { content: ""; position: absolute; right: -1px; top: 50%; transform: translateY(-50%); border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 7px solid var(--border-bright); }
+
+  /* STAGE BLOCK */
+  .stage {
+    border: 1.5px solid var(--border-bright);
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.015) 0%, rgba(255,255,255,0) 100%);
+    padding: 0;
+    width: 100%;
+    max-width: 1080px;
+    overflow: hidden;
+  }
+  .stage-header {
+    padding: 12px 22px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    background: rgba(255,255,255,0.02);
+  }
+  .stage-num { font-size: 11px; font-weight: 700; color: var(--python); text-transform: uppercase; letter-spacing: 0.1em; }
+  .stage-title { font-size: 17px; font-weight: 800; letter-spacing: -0.01em; }
+  .stage-type { color: var(--text-3); font-size: 12px; margin-left: auto; }
+  .stage-body { padding: 18px 22px; }
+
+  /* STAGE 1: signal grid */
+  .signal-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .signal {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 11.5px;
+    line-height: 1.35;
+  }
+  .signal .num {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: var(--python);
+    background: var(--python-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 5px;
+  }
+  .signal .name { color: var(--text); font-weight: 600; }
+  .signal .src { display: block; color: var(--text-3); font-size: 10.5px; margin-top: 2px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .stage-note {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--agent-bg);
+    border: 1px dashed var(--agent-border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text-2);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .stage-note .pill-mini { display: inline-block; flex-shrink: 0; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 2px 6px; border-radius: 8px; background: var(--agent); color: white; }
+
+  /* STAGE 2: scores + matrix */
+  .stage-2-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 22px; align-items: stretch; }
+  .scores-col { display: flex; flex-direction: column; gap: 10px; justify-content: center; }
+  .score-card {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.015);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .score-card .name { font-size: 13px; font-weight: 700; color: var(--python); }
+  .score-card .formula { font-size: 12px; color: var(--text-2); margin-top: 3px; line-height: 1.5; }
+  .score-card .meta { font-size: 11px; color: var(--text-3); margin-top: 4px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .score-card .formula code { font-size: 11.5px; }
+
+  /* 2x2 matrix */
+  .matrix-block { display: flex; flex-direction: column; }
+  .matrix-block .matrix-title { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+  .matrix {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr;
+    grid-template-rows: 24px 1fr 1fr;
+    gap: 4px;
+  }
+  .matrix .ax-x { grid-column: 2 / 4; grid-row: 1; text-align: center; font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 0; font-weight: 600; display: flex; justify-content: space-around; align-items: center; }
+  .matrix .ax-x span { display: block; }
+  .matrix .ax-y { grid-column: 1; writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; gap: 22px; }
+  .matrix .ax-y.row-2 { grid-row: 2; }
+  .matrix .ax-y.row-3 { grid-row: 3; }
+  .cell {
+    border-radius: 8px;
+    padding: 12px 12px;
+    border: 1.5px solid;
+    min-height: 78px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .cell .tier-name { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.8; margin-bottom: 4px; }
+  .cell .tier-action { font-size: 13px; font-weight: 700; line-height: 1.25; }
+  .cell .tier-owner { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+  .cell.t1 { background: var(--t1-bg); border-color: var(--t1-border); color: #d4f4dd; grid-column: 2; grid-row: 2; }
+  .cell.t1 .tier-name { color: var(--t1); }
+  .cell.t3 { background: var(--t3-bg); border-color: var(--t3-border); color: #cbecf5; grid-column: 3; grid-row: 2; }
+  .cell.t3 .tier-name { color: var(--t3); }
+  .cell.t2 { background: var(--t2-bg); border-color: var(--t2-border); color: #fde4b8; grid-column: 2; grid-row: 3; }
+  .cell.t2 .tier-name { color: var(--t2); }
+  .cell.t4 { background: var(--t4-bg); border-color: var(--t4-border); color: #cdd2da; grid-column: 3; grid-row: 3; }
+  .cell.t4 .tier-name { color: var(--t4); }
+
+  /* STAGE 3: forked lanes */
+  .lanes { display: grid; grid-template-columns: 1fr 14px 1fr; gap: 0; align-items: stretch; }
+  .lanes .divider { width: 1px; background: var(--border); margin: 12px auto; }
+  .lane { padding: 4px 14px; }
+  .lane-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .lane-header .tier-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+  .lane-header .tier-tag.t1 { background: var(--t1-bg); color: var(--t1); border: 1px solid var(--t1-border); }
+  .lane-header .tier-tag.t2 { background: var(--t2-bg); color: var(--t2); border: 1px solid var(--t2-border); }
+  .lane-header .owner { font-size: 12.5px; font-weight: 700; color: var(--text); }
+  .lane-header .own-detail { font-size: 11.5px; color: var(--text-3); margin-left: auto; }
+
+  .lane-block {
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 16px 18px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.015);
   }
-  .card h3 { margin: 0 0 6px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
-  .card .badge { font-size: 10px; padding: 2px 8px; border-radius: 10px; background: var(--accent); color: white; font-weight: 600; }
-  .card .badge.scoring { background: var(--accent-2); }
-  .card .badge.routing { background: #f5b942; color: #1a1300; }
-  .card .badge.composer { background: #ff8a4c; color: #1a0d00; }
-  .card p { margin: 4px 0; color: var(--text-2); font-size: 13px; }
-  .card .sources { font-size: 11px; color: var(--accent); margin-top: 8px; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  .lane-block.agent-block { background: var(--agent-bg); border-color: var(--agent-border); }
+  .lane-block.python-block { background: var(--python-bg); border-color: var(--python-border); }
+  .lane-block .pill-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+  .lane-block .pill {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 7px;
+    border-radius: 8px;
+  }
+  .lane-block.agent-block .pill { background: var(--agent); color: white; }
+  .lane-block.python-block .pill { background: var(--python); color: #06140d; }
+  .lane-block .b-name { font-size: 13.5px; font-weight: 700; }
+  .lane-block .b-detail { font-size: 12px; color: var(--text-2); margin-top: 4px; line-height: 1.5; }
+  .lane-block .b-detail code { font-size: 11px; }
 
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
-  th { background: var(--bg-2); color: var(--text-2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; }
-  tr:last-child td { border-bottom: none; }
-  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  /* OUTPUT FLOW */
+  .outputs { display: grid; grid-template-columns: 1fr 14px 1fr; gap: 0; width: 100%; max-width: 1080px; margin-top: 4px; }
+  .outputs .divider { width: 1px; background: var(--border); margin: 12px auto; }
+  .out-col { padding: 0 14px; }
+  .out-step {
+    border-left: 2px solid;
+    padding: 6px 0 14px 16px;
+    margin-left: 12px;
+    position: relative;
+    font-size: 12.5px;
+  }
+  .out-step::before {
+    content: "";
+    position: absolute;
+    left: -8px;
+    top: 8px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2.5px solid;
+    background: var(--bg);
+  }
+  .out-col.t1 .out-step { border-left-color: var(--t1-border); }
+  .out-col.t1 .out-step::before { border-color: var(--t1); }
+  .out-col.t2 .out-step { border-left-color: var(--t2-border); }
+  .out-col.t2 .out-step::before { border-color: var(--t2); }
+  .out-step .when { font-size: 10.5px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.07em; font-weight: 600; }
+  .out-step .what { font-weight: 700; color: var(--text); margin-top: 2px; }
+  .out-step .detail { color: var(--text-2); font-size: 11.5px; margin-top: 3px; line-height: 1.45; }
+  .out-step .target {
+    margin-top: 5px;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    background: var(--output-bg);
+    color: var(--output);
+    border: 1px solid var(--output-border);
+  }
 
-  .tier { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-  .tier.s { background: rgba(245,185,66,0.15); color: var(--s-tier); }
-  .tier.a { background: rgba(78,195,139,0.15); color: var(--a-tier); }
-  .tier.b { background: rgba(91,141,239,0.15); color: var(--b-tier); }
-  .hot { color: var(--hot); font-weight: 700; }
+  /* OUT-LANE HEADER */
+  .out-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .out-header .tier-tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 4px;
+  }
+  .out-header .tier-tag.t1 { background: var(--t1-bg); color: var(--t1); border: 1px solid var(--t1-border); }
+  .out-header .tier-tag.t2 { background: var(--t2-bg); color: var(--t2); border: 1px solid var(--t2-border); }
+  .out-header .label { font-size: 13px; font-weight: 700; color: var(--text); }
 
-  .sheet-mock { background: white; color: #111; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-  .sheet-mock .toolbar { background: #f1f3f4; padding: 8px 14px; font-size: 12px; color: #5f6368; border-bottom: 1px solid #dadce0; display: flex; gap: 16px; align-items: center; }
-  .sheet-mock .toolbar .tab { padding: 4px 10px; background: white; border: 1px solid #dadce0; border-radius: 4px 4px 0 0; font-size: 11px; }
-  .sheet-mock .toolbar .tab.active { font-weight: 600; color: #1a73e8; border-bottom-color: white; }
-  .sheet-mock table { font-size: 11px; }
-  .sheet-mock th { background: #f8f9fa; color: #5f6368; padding: 6px 8px; border-bottom: 1px solid #dadce0; }
-  .sheet-mock td { padding: 6px 8px; border-bottom: 1px solid #f1f3f4; }
-  .sheet-mock .btn { background: #1a73e8; color: white; border: none; padding: 3px 9px; border-radius: 3px; font-size: 10px; cursor: pointer; }
-  .sheet-mock .status-pending { color: #f29900; font-weight: 600; }
-  .sheet-mock .status-sequenced { color: #1e8e3e; font-weight: 600; }
+  /* RETURN LOOP */
+  .return-loop {
+    margin: 18px auto 0;
+    max-width: 1080px;
+    padding: 12px 18px;
+    border: 1px dashed var(--border-bright);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.015);
+    color: var(--text-2);
+    font-size: 12px;
+    text-align: center;
+  }
+  .return-loop strong { color: var(--text); font-weight: 700; }
 
-  .timeline { position: relative; padding-left: 28px; }
-  .timeline::before { content: ""; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
-  .timeline .step { position: relative; padding-bottom: 18px; }
-  .timeline .step::before { content: ""; position: absolute; left: -28px; top: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--card); border: 2px solid var(--accent); }
-  .timeline .step h4 { margin: 0 0 4px; font-size: 13px; }
-  .timeline .step .when { color: var(--accent); font-weight: 600; font-size: 12px; }
-  .timeline .step p { margin: 4px 0 0; color: var(--text-2); font-size: 13px; }
+  /* TIMELINE */
+  .timeline-section { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .timeline-section h2 { font-size: 18px; margin: 0 0 14px; letter-spacing: -0.01em; }
+  .timeline {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card);
+  }
+  .t-step {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .t-step:last-child { border-right: none; }
+  .t-step.highlight { background: var(--agent-bg); }
+  .t-step .when {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--agent);
+    margin-bottom: 4px;
+  }
+  .t-step.highlight .when { color: var(--agent); }
+  .t-step .what { font-size: 13px; font-weight: 700; line-height: 1.3; margin-bottom: 3px; }
+  .t-step .detail { font-size: 11.5px; color: var(--text-2); line-height: 1.4; }
 
-  .footnote { color: var(--text-2); font-size: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
-  .legend { display: flex; gap: 16px; margin-top: 12px; font-size: 12px; color: var(--text-2); flex-wrap: wrap; }
-  .legend .item { display: flex; align-items: center; gap: 6px; }
-  .legend .swatch { width: 12px; height: 12px; border-radius: 3px; }
+  /* FOOTER */
+  .footnote {
+    margin-top: 56px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-2);
+    font-size: 12px;
+  }
+  .footnote strong { color: var(--text); }
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
 
+<!-- HEADER -->
 <header>
-  <h1>Signal-Based Outreach — System Architecture</h1>
-  <div class="sub">
+  <div class="meta">
     <span class="pill">Part 3</span>
-    Weekly Claude Code agent. 50k ICP universe → Fit × Intent scoring → SDR Google Sheets + Amplemarket programmatic.
+    <span>System Design + GTM Integration</span>
   </div>
+  <h1>Signal-Based Outreach System — Architecture</h1>
+  <p class="sub"><strong>Scheduled Claude Code agent · runs every Monday at 6 AM · end-to-end in under 30 minutes.</strong> One orchestrator + three Python pipeline stages + one LLM hook agent. Honest agent count: 2. The pipeline reads from Salesforce, scores accounts on Fit × Intent, and routes them by owner — Tier 1 to a SDR for personalized compose, Tier 2 to automated templated outreach.</p>
 </header>
 
-<!-- ARCHITECTURE FLOWCHART -->
-<section>
-  <h2><span class="num">1</span>The Architecture</h2>
-  <p class="lede"><strong>Scheduled cron · runs every Monday at 6 AM · end-to-end in under 30 minutes.</strong> One Claude Code orchestrator running 3 Python pipeline stages, with the LLM invoked at 2 specific points (sub-type classification in Stage 1, AI hook generation in Stage 3). Honest agent count: 2. The pipeline starts from a Salesforce query (territory + status filters do most of the exclusion work natively), and writes back to Salesforce. SDRs work in a per-territory Google Sheet; Tier 1 = manual compose with AI hook, Tier 2 = auto-fires by default.</p>
-
-  <div class="diagram">
-    <div class="mermaid">
-flowchart TB
-    SF["Salesforce SOQL · REST /query<br/>JWT bearer · service account<br/>ICP + territory + state filters<br/>~40k IDs · paginated 2k rows"]
-    MO["Claude Code Orchestrator<br/>Cloud Scheduler 0 6 * * 1<br/>→ Cloud Run container<br/>retry · error-handling"]
-
-    S1["STAGE 1: Signal Collector<br/>Python ETL<br/>10+ API calls in parallel<br/>+ 2 inline LLM classifier calls"]
-    S2["STAGE 2: Scorer<br/>Python (deterministic)<br/>Fit + Intent + Multi-signal bonus<br/>2×2 matrix → Tier 1/2/3/4"]
-    S3["STAGE 3: Distributor<br/>LLM Hook Agent (Tier 1)<br/>+ Python (Tier 2 templated)"]
-
-    SN[("Snowflake<br/>append-only signal store")]
-    SF_W["Salesforce write-back<br/>score · tier · strongest signal · ai_hook · cadence"]
-
-    GS["Google Sheet · primary action surface<br/>per-territory · 8 columns · editable"]
-    LV["SF Lead View<br/>per-rep, native CRM · same 8 columns"]
-
-    SDR["SDR works in the Sheet<br/>Tier 1: marks Yes → composes in Amplemarket<br/>Tier 2: auto-fires by default"]
-    AM["Amplemarket"]
-
-    SF --> MO
-    MO --> S1
-    S1 --> SN
-    SN --> S2
-    S2 --> SF_W
-    SF_W --> S3
-    S3 --> GS
-    SF_W --> LV
-    GS --> SDR
-    SDR --> AM
-    S3 -.Tier 2 auto-pushes.-> AM
-
-    classDef agent fill:#5b3fa3,stroke:#7c5cff,color:#fff,stroke-width:2px
-    classDef python fill:#1e6b3a,stroke:#4ec38b,color:#fff,stroke-width:1px
-    classDef neutral fill:#2a2f3d,stroke:#6b7280,color:#fff,stroke-width:1px
-    class MO,S3 agent
-    class S1,S2 python
-    class SF,SN,SF_W,GS,LV,SDR,AM neutral
-    </div>
-  </div>
-
-  <div class="legend">
-    <div class="item"><div class="swatch" style="background:#5b3fa3;border:2px solid #7c5cff"></div>Agent (LLM-driven)</div>
-    <div class="item"><div class="swatch" style="background:#1e6b3a;border:1px solid #4ec38b"></div>Python (deterministic)</div>
-    <div class="item"><div class="swatch" style="background:#2a2f3d;border:1px solid #6b7280"></div>Data source · storage · UI</div>
-  </div>
-</section>
-
-<!-- AGENTS -->
-<section>
-  <h2><span class="num">2</span>Components — 1 Agent + 3 Pipeline Stages</h2>
-  <p class="lede">Honest split: <strong>2 actual agents</strong> (Claude Code orchestrator + the LLM hook agent embedded in Stage 3). The 3 pipeline stages are deterministic Python scripts. LLM is invoked at exactly 2 specific points — sub-type classification (Stage 1, inline) and AI hook generation (Stage 3, full agent).</p>
-
-  <h3 style="font-size:13px; margin: 18px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">The Orchestrator (the agent)</h3>
-  <div class="grid grid-2">
-    <div class="card" style="border-color: #7c5cff; border-width: 2px;">
-      <h3><span class="badge">Agent</span> Claude Code Orchestrator</h3>
-      <p>Cron-triggered every Monday 6 AM. Runs the 3 stages in sequence. Handles cross-stage retry/error logic, supervises edge cases (account merges, missing data, API failures).</p>
-      <p style="margin-top:10px; color:var(--text-2); font-size:12px;"><strong>What "cron" actually means:</strong> a scheduled-job trigger. The orchestrator code lives in a Docker container on <strong>Cloud Run</strong> (or AWS Fargate / Render). <strong>Google Cloud Scheduler</strong> sends an HTTPS POST to that container every Monday at 6 AM using the cron expression <code style="background:rgba(0,0,0,0.25);padding:1px 5px;border-radius:3px;">0 6 * * 1</code> — minute 0, hour 6, any day-of-month, any month, day-of-week 1 (Monday). The container boots, secrets (SF token, Anthropic key, Amplemarket key, Google service account JSON) are injected via Secret Manager, the orchestrator runs the 3 stages, then the container shuts down. ~30 min total. No always-on infra — pay-per-run, ~$3/month.</p>
-      <div class="sources">Cloud Run · Cloud Scheduler · Secret Manager · Claude Code subagent system invokes Python stage scripts as tools</div>
-    </div>
-    <div class="card">
-      <h3><span class="badge">Input</span> Salesforce query</h3>
-      <p>Pre-pipeline filtering happens natively in SF via territory + account status. Drops customers, active opps, churned &lt;6mo, layoffs, and (via Amplemarket→SF activity sync) already-engaged accounts. Returns ~40k available account IDs. No separate Python "exclusion filter" needed — it's a single SOQL query.</p>
-      <p style="margin-top:10px; color:var(--text-2); font-size:12px;"><strong>How the orchestrator hits SF:</strong> on Monday at 6 AM, Stage 1 authenticates via the JWT bearer flow against a connected app (no user login, runs as a service account), then issues one SOQL query through the REST <code>/query</code> endpoint. Results stream in 2,000-row pages and are loaded straight into Snowflake via the Salesforce Snowflake connector. Pseudocode below.</p>
-      <pre style="background:#0d1018; border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:11.5px; color:#cfd5e3; overflow-x:auto; margin-top:10px; line-height:1.5;"><code>SELECT Id, Name, Industry, NumberOfEmployees,
-       AnnualRevenue, OwnerId, Territory__c,
-       Last_Engaged_Amplemarket__c
-FROM   Account
-WHERE  RecordType.Name        = 'ICP Account'
-  AND  NumberOfEmployees      &gt;= 50
-  AND  Industry IN ('SaaS','Fintech','B2B Services',...)
-  AND  Type                  != 'Customer'
-  AND  Active_Opportunity__c  = FALSE
-  AND  Churn_Date__c          = NULL
-       OR  Churn_Date__c     &lt; LAST_N_MONTHS:6
-  AND  Layoff_Flag__c         = FALSE
-  AND  (Last_Engaged_Amplemarket__c = NULL
-        OR Last_Engaged_Amplemarket__c &lt; LAST_N_DAYS:30)
-  AND  OwnerId IN :territory_ids</code></pre>
-      <p style="margin-top:8px; color:var(--text-2); font-size:11.5px;"><strong>Per-filter notes:</strong> <code>RecordType</code> + <code>Industry</code> + <code>NumberOfEmployees</code> = ICP gate · <code>Type</code> + <code>Active_Opportunity__c</code> + <code>Churn_Date__c</code> = customer/opp state · <code>Layoff_Flag__c</code> = enriched weekly from layoffs.fyi → SF · <code>Last_Engaged_Amplemarket__c</code> = synced nightly from Amplemarket activity webhook → SF custom field · <code>Territory__c</code>/<code>OwnerId</code> = territory split.</p>
-      <div class="sources">Salesforce REST API /query · JWT bearer flow · Amplemarket → SF nightly sync</div>
-    </div>
-  </div>
-
-  <h3 style="font-size:13px; margin: 24px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">The 3 Pipeline Stages</h3>
-  <div class="grid grid-3">
-    <div class="card" style="border-color: #4ec38b;">
-      <h3><span class="badge" style="background:#4ec38b;color:#06140d;">Python</span> Stage 1 — Signal Collector</h3>
-      <p><strong>What:</strong> Python ETL. Fans out 10+ API calls in parallel for the ~40k accounts. Signals #1–#10 collected here.</p>
-      <p><strong>LLM micro-calls (inline):</strong> sentiment classifier on signal #7 (pain vs. topical). Role classifier on signal #5 (senior vs. operational hire). Each is a single ~100ms / ~$0.0001 call — not a separate agent.</p>
-      <div class="sources">Clay · RB2B · Clearbit Reveal · 6sense · GA4 · HubSpot/Marketo · Goldcast/Demio · LinkedIn Campaign Manager · Reddit Ads · Common Room · LinkedIn Sales Nav · LinkedIn Jobs · Greenhouse · Lever · Listen Notes · Quartr/AlphaSense · Crunchbase · PitchBook · G2 Buyer Intent · layoffs.fyi · Amplemarket · Salesforce → Snowflake</div>
-    </div>
-    <div class="card" style="border-color: #4ec38b;">
-      <h3><span class="badge" style="background:#4ec38b;color:#06140d;">Python</span> Stage 2 — Scorer</h3>
-      <p><strong>What:</strong> Pure deterministic math. No LLM, no agent.</p>
-      <p>Fit Score (industry × sales motion × growth) + Intent Score (signal weights + multi-signal bonus) → 2×2 matrix → Tier 1/2/3/4 → strongest-signal pick.</p>
-      <div class="sources">reads Snowflake + SF metadata · writes scoring records to SF</div>
-    </div>
-    <div class="card" style="border-color: #ff5b9c; border-width: 2px;">
-      <h3><span class="badge" style="background:#ff5b9c;color:#1a0010;">Hybrid</span> Stage 3 — Distributor (owner-driven)</h3>
-      <p><strong>Tier 1 (SDR-owned) [LLM Hook Agent]:</strong> Generates a 1–2 sentence personalized opener per account from signal evidence (~250 calls/Monday, ~$0.001 each, retry + brand-safety QC). Written to SF custom field <code>ai_hook</code>. When SDR marks Yes, Apps Script creates an Amplemarket draft with the hook pre-filled in step 1 + templated 5-touch structure; SDR composes the email in their voice and sends.</p>
-      <p><strong>Tier 2 (Auto-owned) [Python only]:</strong> Python populates SF custom-field tokens per contact (webinar name, pages visited, competitor name, etc.) and <strong>auto-pushes</strong> to the matching templated Amplemarket sequence — fires immediately when Stage 3 runs. No SDR action required by default; SDR can override via SF if needed. No LLM.</p>
-      <div class="sources">Anthropic Claude API (Tier 1 hook only) · Amplemarket API · Google Sheets Apps Script · Salesforce</div>
-    </div>
-  </div>
-
-  <h3 style="font-size:13px; margin: 24px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">How the Google Sheet refresh works</h3>
-  <div class="card">
-    <p style="margin:0; font-size:15px;"><strong>Yes — you just open your Google Sheet on Monday morning and it's already updated.</strong></p>
-    <p style="margin:10px 0 0;">Same Sheet you used last Monday. Same URL, same bookmark, same tabs. The pipeline doesn't create a new file each week — it wipes last week's rows and writes the fresh ones in their place. By the time the SDR opens it at 8 AM, the new Tier 1 list is sitting there waiting.</p>
-    <p style="margin:10px 0 0;">There's one Sheet per territory (ten total — one per SDR). Each is set up once during Week 2 of rollout: the orchestrator gets edit access, and from then on it can refresh the rows automatically every Monday.</p>
-    <p style="margin:10px 0 0;"><strong>When the SDR flips "Add to sequence" to Yes:</strong> the Sheet fires off the cadence in Amplemarket and the row turns to "Sequenced." Tier 2 rows already arrive marked "Sequenced" — the pipeline fired those cadences at 6:30 AM, no SDR action needed.</p>
-  </div>
-</section>
-
-<!-- CADENCE PLAYBOOK -->
-<section>
-  <h2><span class="num">3</span>Cadence Playbook — Owner-Driven Workflow</h2>
-  <p class="lede"><strong>Owner determines the workflow, not signal type.</strong> <strong>Tier 1 (SDR-owned)</strong> → AI hook generated per account, SDR composes the email in Amplemarket using hook + signal context. <strong>Tier 2 (Auto-owned)</strong> → Python pushes contact to one of <strong>10 templated cadences</strong> (one per signal) with custom-field tokens populated from signal evidence. Sales leadership owns 100% of templated body copy. AI is bounded to one job: hook generation for Tier 1.</p>
-
-  <h3 style="font-size:13px; margin: 8px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">Tier 1 (SDR-owned) — Personalized + AI hook</h3>
-  <div class="card" style="border-left: 4px solid #6E56CF; margin-bottom: 18px;">
-    <p style="margin:0;"><strong>Cadence column:</strong> "Personalized — AI hook ready."</p>
-    <p style="margin:8px 0 0;">Stage 3 LLM Hook Agent generates a 1–2 sentence opener per Tier 1 account during the Monday batch (~250 calls/Monday). Stored in SF custom field <code style="background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;font-size:12px;">ai_hook</code>. SDR previews in the Sheet → marks Yes → Apps Script creates an Amplemarket draft sequence (hook in step 1 + 5-touch templated structure for steps 2–5, all editable) → SDR opens Amplemarket, composes the email in their voice, sends.</p>
-    <p style="margin:8px 0 0; color:var(--text-2); font-size:12px;"><em>Why no library cadence per signal here: SDRs craft the body. The 10 templated cadences are exclusively for Auto-outreach (below).</em></p>
-  </div>
-
-  <h3 style="font-size:13px; margin: 8px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">Tier 2 (Auto-owned) — 10 templated cadences</h3>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Signal</th>
-          <th>Cadence (Auto-outreach)</th>
-          <th>Custom-field tokens (populated by Stage 3)</th>
-          <th>Sample templated opener</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>#1 Website visits</strong></td>
-          <td>Website visits</td>
-          <td><code>{{pages_visited}}</code> · <code>{{visit_count}}</code></td>
-          <td><em>"Saw your team spent time on our <code>{{pages_visited}}</code> this week — worth comparing?"</em></td>
-        </tr>
-        <tr>
-          <td><strong>#2 Content engagement</strong></td>
-          <td>Webinar / event followup</td>
-          <td><code>{{event_name}}</code> · <code>{{event_date}}</code> · <code>{{event_topic}}</code></td>
-          <td><em>"Thanks for attending <code>{{event_name}}</code> — quick question on what resonated."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#3 Ad interaction</strong></td>
-          <td>Ad interaction followup</td>
-          <td><code>{{ad_topic}}</code> · <code>{{platform}}</code></td>
-          <td><em>"Saw you engaged with our <code>{{platform}}</code> post on <code>{{ad_topic}}</code> — happy to compare notes."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#4 Slack community</strong></td>
-          <td>Slack community</td>
-          <td><code>{{community_name}}</code> · <code>{{post_topic}}</code></td>
-          <td><em>"Saw your post in <code>{{community_name}}</code> about <code>{{post_topic}}</code> — [comparable co.] solved that exact thing."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#5 Executive change</strong></td>
-          <td>Sales leadership change</td>
-          <td><code>{{new_exec_name}}</code> · <code>{{new_exec_title}}</code> · <code>{{previous_company}}</code></td>
-          <td><em>"Welcome to <code>{{new_exec_name}}</code> as <code>{{new_exec_title}}</code> — first 90 days are the tool-eval window..."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#6 Sales team scaling</strong></td>
-          <td>Sales team scaling</td>
-          <td><code>{{role_count}}</code> · <code>{{role_types}}</code></td>
-          <td><em>"Noticed you posted <code>{{role_count}}</code> <code>{{role_types}}</code> roles last 30d — teams scaling 30%+ hit ramp pain by month 3."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#7 Buyer pain / topical</strong></td>
-          <td>Buyer pain / topical</td>
-          <td><code>{{post_topic}}</code> · <code>{{post_excerpt}}</code></td>
-          <td><em>"Saw your post on <code>{{post_topic}}</code> — most CROs we work with hit that exact wall around team size 50."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#8 Competitor usage</strong></td>
-          <td>Competitor usage</td>
-          <td><code>{{competitor_name}}</code> · <code>{{competitor_role_count}}</code></td>
-          <td><em>"Saw you're hiring AEs requiring <code>{{competitor_name}}</code> experience — things have shifted in the category since you last evaluated."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#9 Competitor churn</strong></td>
-          <td>Competitor churn</td>
-          <td><code>{{competitor_name}}</code> · <code>{{churn_event_type}}</code></td>
-          <td><em>"<code>{{churn_event_type}}</code> at <code>{{competitor_name}}</code> this week — when [competitor] cracks, most CROs reassess."</em></td>
-        </tr>
-        <tr>
-          <td><strong>#10 Recent funding</strong></td>
-          <td>Recent funding</td>
-          <td><code>{{round_size}}</code> · <code>{{round_stage}}</code> · <code>{{lead_investor}}</code></td>
-          <td><em>"Congrats on the <code>{{round_stage}}</code> — teams post-raise typically prioritize revenue-acceleration tools in the first 90 days."</em></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p class="lede" style="margin-top: 14px;"><strong>Workflow branching by owner:</strong> <strong>Tier 1 (SDR)</strong> rows wait in the Sheet for the SDR to mark Yes. On Yes, Apps Script creates an Amplemarket draft with the AI hook pre-filled in step 1 + a 5-touch templated structure; SDR composes the email and sends. <strong>Tier 2 (Auto)</strong> rows are auto-pushed by Stage 3 the moment the pipeline runs Monday morning — SDR doesn't need to action them. They show up as "Sequenced" in the Sheet by 6:31 AM. SDR can still override via SF if needed.</p>
-</section>
-
-<!-- SDR SURFACES -->
-<section>
-  <h2><span class="num">4</span>What the SDR Sees — SF Lead View + Google Sheet, One 8-Column Table</h2>
-  <p class="lede">Both views are written by the Distribution Layer (Salesforce write-back drives both). <strong>Same 8 columns in both.</strong> The <strong>SF Lead View</strong> sits natively in the SDR's daily CRM flow — they triage their Tier 1 list there, click into account records for full context. The <strong>Google Sheet</strong> is the Monday-morning workspace where the <strong>"Add to sequence" column</strong> (Yes / No / blank) is editable. Flipping to Yes routes by Owner: <strong>SDR (Tier 1)</strong> → Amplemarket draft with AI hook pre-filled + SDR composes; <strong>Automated (Tier 2)</strong> → templated cadence fires automatically.</p>
-
-  <h3 style="font-size:13px; margin: 18px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">Salesforce Lead View — "My Tier 1 This Week"</h3>
-  <div class="sheet-mock" style="background:#f4f6f9;">
-    <div class="toolbar" style="background:#0070d2; color:white; border-bottom-color:#005fb2;">
-      <span style="font-weight:600;">Salesforce · Leads · My Tier 1 This Week</span>
-      <span style="margin-left:auto; color:#cce4f7;">Filter: tier = "Tier 1" AND owner = current_user · Sort: Intent DESC · 47 records</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Account</th>
-          <th>Owner</th>
-          <th>Fit / Intent</th>
-          <th>Strongest Signal</th>
-          <th>Last Interaction</th>
-          <th>Recommended Cadence</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Acme Sales Co.</strong></td>
-          <td>Alice D.</td>
-          <td>100 / 89</td>
-          <td>Website visits · /demo + /pricing</td>
-          <td><span style="color:#5f6368;">No prior interaction</span></td>
-          <td><strong>Personalized</strong> · AI hook ready</td>
-          <td class="status-pending">Pending</td>
-        </tr>
-        <tr>
-          <td><strong>NorthStar Logistics</strong></td>
-          <td>Automated outreach</td>
-          <td>72 / 52</td>
-          <td>Competitor churn · G2 drop</td>
-          <td><span style="color:#5f6368;">Email sent 47d ago, no reply</span></td>
-          <td>Competitor churn</td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-        <tr>
-          <td><strong>BrightPath SaaS</strong></td>
-          <td>Alice D.</td>
-          <td>85 / 45</td>
-          <td>Buyer pain · LinkedIn post</td>
-          <td><span style="color:#5f6368;">No prior interaction</span></td>
-          <td><strong>Personalized</strong> · AI hook ready</td>
-          <td class="status-pending">Pending</td>
-        </tr>
-        <tr>
-          <td><strong>Vortex Cloud</strong></td>
-          <td>Automated outreach</td>
-          <td>78 / 38</td>
-          <td>Competitor usage · Gong JD</td>
-          <td><span style="color:#5f6368;">Replied 3d ago — "Not now, ping in Q3"</span></td>
-          <td>Competitor usage</td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-        <tr>
-          <td><strong>Helix Bio</strong></td>
-          <td>Automated outreach</td>
-          <td>65 / 40</td>
-          <td>Recent funding · Series B</td>
-          <td><span style="color:#5f6368;">LinkedIn DM 14d ago, no reply</span></td>
-          <td>Recent funding</td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="lede" style="margin-top: 10px; font-size: 12px;">SDR uses the SF Lead View for in-CRM triage: scan today's leads, click into account records for full context (including the AI hook on Personalized rows). <em>Actions happen in the Sheet</em> — Add to sequence column is editable there.</p>
-
-  <h3 style="font-size:13px; margin: 26px 0 10px; color:var(--text-2); text-transform:uppercase; letter-spacing:0.06em;">Google Sheet — Monday-morning workspace</h3>
-  <div class="sheet-mock">
-    <div class="toolbar">
-      <span style="font-weight:600;">Alice — EMEA Mid-Market Territory</span>
-      <span class="tab active">This Week's Tier 1</span>
-      <span class="tab">Watchlist</span>
-      <span class="tab">Recently Sequenced</span>
-      <span style="margin-left:auto; color:#5f6368;">Last refreshed: Mon 6:31 AM</span>
-    </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Account</th>
-          <th>Fit / Intent</th>
-          <th>Strongest Signal</th>
-          <th>Last Interaction</th>
-          <th>Cadence</th>
-          <th>AI-Generated Hook</th>
-          <th>Action</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Acme Sales Co.</strong></td>
-          <td>100 / 89</td>
-          <td>Website visits · /demo + /pricing</td>
-          <td>No prior interaction</td>
-          <td><strong>Personalized</strong> · AI hook ready</td>
-          <td><em>Saw Jane Doe spent time on /demo and /pricing this week — typically that means a call-coaching eval is open…</em></td>
-          <td><span style="color:#5f6368;font-size:10px;">Yes → Amplemarket draft</span></td>
-          <td class="status-pending">Pending</td>
-        </tr>
-        <tr>
-          <td><strong>NorthStar Logistics</strong></td>
-          <td>72 / 52</td>
-          <td>Competitor churn · G2 drop</td>
-          <td>Email sent 47d ago, no reply</td>
-          <td>Competitor churn</td>
-          <td><em>(templated body, no AI hook — auto-fired)</em></td>
-          <td><span style="color:#5f6368;font-size:10px;">auto · no SDR action</span></td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-        <tr>
-          <td><strong>BrightPath SaaS</strong></td>
-          <td>85 / 45</td>
-          <td>Buyer pain · LinkedIn post</td>
-          <td>No prior interaction</td>
-          <td><strong>Personalized</strong> · AI hook ready</td>
-          <td><em>Saw your LinkedIn post about forecast slippage after Q2…</em></td>
-          <td><span style="color:#5f6368;font-size:10px;">Yes → Amplemarket draft</span></td>
-          <td class="status-pending">Pending</td>
-        </tr>
-        <tr>
-          <td><strong>Vortex Cloud</strong></td>
-          <td>78 / 38</td>
-          <td>Competitor usage · Gong JD</td>
-          <td><span style="color:#1e8e3e;">Replied 3d ago</span></td>
-          <td>Competitor usage</td>
-          <td><em>(templated body, no AI hook — Auto-outreach)</em></td>
-          <td><span style="color:#5f6368;font-size:10px;">Yes → Amplemarket fires</span></td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-        <tr>
-          <td><strong>Helix Bio</strong></td>
-          <td>65 / 40</td>
-          <td>Recent funding · Series B</td>
-          <td>LinkedIn DM 14d ago, no reply</td>
-          <td>Recent funding</td>
-          <td><em>(templated body, no AI hook — auto-fired)</em></td>
-          <td><span style="color:#5f6368;font-size:10px;">auto · no SDR action</span></td>
-          <td class="status-sequenced">Sequenced</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <p class="lede" style="margin-top: 14px;"><strong>SDR action layer.</strong> Tier 1 rows: SDR reviews hook, flips "Add to sequence" to Yes → Apps Script creates an Amplemarket draft with hook pre-filled in step 1; SDR composes + sends. ~10–15 min/account. Tier 2 rows: <em>auto-fired by Stage 3 on Monday's run</em> — show up as "Sequenced" by default, no SDR action required.</p>
-
-  <div style="margin-top:20px; padding: 14px 18px; background: rgba(245,185,66,0.08); border-left: 3px solid var(--s-tier); border-radius: 4px; font-size: 13px;">
-    <strong style="color: var(--s-tier);">Concurrent dependency: Cadence Library</strong><br>
-    <span style="color: var(--text-2);">The system routes accounts <em>into</em> the cadence library, but the library itself doesn't yet exist at Attention. Building it (~8 templated cadences with body templates, A/B subject variants, deliverability rules) is a parallel workstream owned by sales leadership + growth eng. Worth flagging in the interview as a key v1 dependency.</span>
-  </div>
-</section>
-
-<!-- DAY IN THE LIFE -->
-<section>
-  <h2><span class="num">5</span>SDR Day-in-the-Life</h2>
-  <p class="lede">The system is designed around a Monday-morning ritual that makes sequencing decisions almost frictionless.</p>
-
-  <div class="timeline">
-    <div class="step">
-      <div class="when">Monday 6:00 AM</div>
-      <h4>Orchestrator runs the pipeline</h4>
-      <p>Claude Code orchestrator pulls 50k from SF → Python exclusion filter → Stage 1 (Python ETL collects signals + LLM classification) → Stage 2 (Python scorer) → Stage 3 (LLM hook agent for Tier 1 + Python distribution). Total runtime &lt; 30 min.</p>
-    </div>
-    <div class="step">
-      <div class="when">Monday 6:30 AM</div>
-      <h4>Sheets refreshed + Amplemarket primed</h4>
-      <p>Per-territory sheets refresh with new Tier 1. ~2,000 Tier 2 accounts pushed to Amplemarket programmatic. SF account fields written back.</p>
-    </div>
-    <div class="step">
-      <div class="when">Monday 8:00 AM</div>
-      <h4>SDR opens cockpit (SF Lead View or Sheet)</h4>
-      <p>Both views show the same 8-column table. SDR triages from the SF Lead View ("47 Tier 1 leads to work today"), then jumps to the Sheet to flip the "Add to sequence" column to Yes / No on each row. ~5 min/account, bulk-action friendly.</p>
-    </div>
-    <div class="step">
-      <div class="when">Tue – Thu</div>
-      <h4>Work the queue + handle replies</h4>
-      <p>SDR finishes Tier 1 backlog. Replies/bookings flow back via Amplemarket → SF → SDR follow-up.</p>
-    </div>
-    <div class="step">
-      <div class="when">Continuous (parallel)</div>
-      <h4>Auto-outbound runs unattended</h4>
-      <p>Tier 2 accounts auto-fire when Stage 3 runs Monday morning. No SDR involvement. Replies routed to a shared inbox monitored by the growth team. Booked meetings handed off to AEs.</p>
-    </div>
-  </div>
-</section>
-
-<!-- TECH STACK -->
-<section>
-  <h2><span class="num">6</span>Tech Stack Mapping</h2>
-  <p class="lede">Every tool in Attention's existing stack maps to a specific role. No new tools required.</p>
-
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Tool</th><th>Role in this system</th></tr></thead>
-      <tbody>
-        <tr><td><strong>Salesforce</strong></td><td>Source of truth + native per-rep <strong>Lead View</strong> ("My Tier 1 This Week"). 50k account universe, ICP filter, territory ownership, score/tier/strongest-signal/cadence write-back, opp/customer status, outcome tracking. Drives both the Lead View and the Sheet refresh.</td></tr>
-        <tr><td><strong>Clay</strong></td><td>Enrichment + orchestration layer for Stage 1's external feeds (LinkedIn, ATS, Crunchbase, news). Composable workflows the Python ETL calls into.</td></tr>
-        <tr><td><strong>Snowflake</strong></td><td>Warehouse. Append-only signal store + scoring history + Phase-2 ML training data substrate.</td></tr>
-        <tr><td><strong>Amplemarket</strong></td><td>Outbound execution. SDR sequences (Tier 1 manual) + programmatic auto-outbound (Tier 2). API-driven push.</td></tr>
-        <tr><td><strong>Attention</strong></td><td>(eventually) Conversation intelligence on resulting calls — closes the loop. Outcomes feed Phase-2 model training.</td></tr>
-        <tr><td><strong>Claude Code</strong></td><td>The orchestrator agent + supervisor. Cron + retry/error handling across the 3 Python pipeline stages. The LLM is invoked at 2 specific points: sub-type classification (Stage 1, inline) and AI hook generation (Stage 3, full agent with retry + brand-safety QC).</td></tr>
-        <tr><td><strong>Google Sheets</strong></td><td>Editable workspace over the same 8-column table. Per-territory. Apps Script listens on the editable "Add to sequence" column — when SDR flips a row to Yes, it triggers the Amplemarket API push (using the AI hook already generated by Stage 3). Status syncs back to SF (and therefore to the Lead View).</td></tr>
-        <tr><td><strong>External feeds</strong></td><td>G2 / RB2B / 6sense / Clearbit Reveal / Common Room / Listen Notes / Quartr / AlphaSense — called by Stage 1 Python ETL, results landed in Snowflake.</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<div class="footnote">
-  <strong>Why this architecture wins:</strong> SF as source of truth (analytics don't rot) · Sheets as UI (frictionless, where SDRs already live) · Amplemarket programmatic (scales without people) · 3 Python stages independently testable + cheap to run · Snowflake history (enables Phase-2 ML training data) · LLM bounded to 2 specific tasks (sub-type classification + hook generation; ~$25/week) · No "agent" hype on what's really ETL — defensible to engineering scrutiny.
-  <br><br>
-  See <code>part-3.md</code> for full detail. Companion: <code>part-1.md</code> (signals), <code>part-2.md</code> (scoring & tiering).
+<!-- LEGEND -->
+<div class="legend">
+  <span class="item"><span class="swatch agent"></span>Agent (LLM)</span>
+  <span class="item"><span class="swatch python"></span>Python (deterministic)</span>
+  <span class="item"><span class="swatch data"></span>Data layer</span>
+  <span class="item"><span class="swatch output"></span>Output / SDR surface</span>
 </div>
 
-</div>
+<!-- ============================================================ -->
+<!-- THE MASTER DIAGRAM                                            -->
+<!-- ============================================================ -->
 
-<script>
-  mermaid.initialize({
-    startOnLoad: true,
-    theme: 'dark',
-    themeVariables: {
-      darkMode: true,
-      background: '#14171f',
-      primaryColor: '#1a1e29',
-      primaryTextColor: '#e8eaed',
-      primaryBorderColor: '#5b8def',
-      lineColor: '#5b8def',
-      secondaryColor: '#2a1f3d',
-      tertiaryColor: '#1f3a3a',
-      fontFamily: 'inherit',
-      fontSize: '13px'
-    },
-    flowchart: {
-      curve: 'basis',
-      padding: 20,
-      nodeSpacing: 50,
-      rankSpacing: 60
-    }
-  });
-</script>
+<div class="diagram">
+
+  <!-- TRIGGER + ORCHESTRATOR -->
+  <div class="trigger-row">
+    <div class="node data">
+      <span class="badge">Trigger</span>
+      <div class="title">Cloud Scheduler</div>
+      <div class="meta-line">Mondays at 6:00 AM · cron <code>0 6 * * 1</code></div>
+      <div class="meta-line">→ POSTs to Cloud Run container (Docker)</div>
+    </div>
+    <div class="arrow-right"></div>
+    <div class="node agent">
+      <span class="badge">Agent · 1 of 2</span>
+      <div class="title">Claude Code Orchestrator</div>
+      <div class="meta-line">Runs the 3 stages in sequence · retry · error-handling</div>
+      <div class="meta-line">Container shuts down after run · ~$3/month total infra</div>
+    </div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- SF QUERY -->
+  <div class="node data">
+    <span class="badge">Input</span>
+    <div class="title">Salesforce Query (SOQL via REST <code>/query</code>)</div>
+    <div class="meta-line">JWT bearer auth · service account · paginated 2k rows</div>
+    <div class="meta-line">Filters: ICP gate (industry · employees ≥50) · territory · customer/opp/churn/layoff state · already-engaged-in-Amplemarket</div>
+    <div class="result">→ ~40k available account IDs</div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- STAGE 1 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num">Stage 1</span>
+      <span class="stage-title">Signal Collector</span>
+      <span class="stage-type">Python ETL · 10+ APIs in parallel</span>
+    </div>
+    <div class="stage-body">
+      <div class="signal-grid">
+        <div class="signal"><span class="num">1</span><span class="name">Website visits</span><span class="src">RB2B</span></div>
+        <div class="signal"><span class="num">2</span><span class="name">Content engagement</span><span class="src">Goldcast</span></div>
+        <div class="signal"><span class="num">3</span><span class="name">Ad interaction</span><span class="src">LinkedIn Ads</span></div>
+        <div class="signal"><span class="num">4</span><span class="name">Slack community</span><span class="src">Amplemarket</span></div>
+        <div class="signal"><span class="num">5</span><span class="name">Exec change</span><span class="src">Amplemarket</span></div>
+        <div class="signal"><span class="num">6</span><span class="name">Sales scaling</span><span class="src">Amplemarket</span></div>
+        <div class="signal"><span class="num">7</span><span class="name">Buyer pain</span><span class="src">LinkedIn Sales Nav</span></div>
+        <div class="signal"><span class="num">8</span><span class="name">Competitor usage</span><span class="src">Amplemarket</span></div>
+        <div class="signal"><span class="num">9</span><span class="name">Competitor churn</span><span class="src">G2</span></div>
+        <div class="signal"><span class="num">10</span><span class="name">Recent funding</span><span class="src">Crunchbase</span></div>
+      </div>
+      <div class="stage-note">
+        <span class="pill-mini">+LLM</span>
+        <span><strong>2 inline LLM micro-calls</strong> for sub-type classification — signal #5 (senior vs operational hire) and signal #7 (pain vs topical engagement). ~100ms / ~$0.0001 each. Not separate agents.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- SNOWFLAKE -->
+  <div class="node data">
+    <span class="badge">Storage</span>
+    <div class="title">Snowflake — append-only signal store</div>
+    <div class="meta-line">History layer (never deleted) · backtest substrate · feeds Phase 2 ML calibration</div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- STAGE 2 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num">Stage 2</span>
+      <span class="stage-title">Scorer</span>
+      <span class="stage-type">Pure Python · deterministic · no LLM</span>
+    </div>
+    <div class="stage-body">
+      <div class="stage-2-grid">
+        <div class="scores-col">
+          <div class="score-card">
+            <div class="name">Fit Score · 0–100</div>
+            <div class="formula">industry tier (50) + sales motion intensity (30) + growth/funding stage (20)</div>
+            <div class="meta">refreshed monthly</div>
+          </div>
+          <div class="score-card">
+            <div class="name">Intent Score · 0–100</div>
+            <div class="formula">Σ signal weights + multi-signal bonus (+5 / +12 / +25 for 2 / 3 / 4+ signals firing)</div>
+            <div class="meta">refreshed weekly</div>
+          </div>
+        </div>
+        <div class="matrix-block">
+          <div class="matrix-title">2 × 2 routing matrix → tier + owner</div>
+          <div class="matrix">
+            <div class="ax-x"><span>High Intent (≥30)</span><span>Low Intent (&lt;30)</span></div>
+            <div class="ax-y row-2">High Fit (≥70)</div>
+            <div class="cell t1">
+              <div class="tier-name">Tier 1</div>
+              <div class="tier-action">SDR · Personalized</div>
+              <div class="tier-owner">+ AI hook</div>
+            </div>
+            <div class="cell t3">
+              <div class="tier-name">Tier 3</div>
+              <div class="tier-action">Watchlist</div>
+              <div class="tier-owner">re-scored Mon</div>
+            </div>
+            <div class="ax-y row-3">Low Fit (&lt;70)</div>
+            <div class="cell t2">
+              <div class="tier-name">Tier 2</div>
+              <div class="tier-action">Auto-outreach</div>
+              <div class="tier-owner">no SDR action</div>
+            </div>
+            <div class="cell t4">
+              <div class="tier-name">Tier 4</div>
+              <div class="tier-action">Skip</div>
+              <div class="tier-owner">filtered out</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- SF WRITE-BACK -->
+  <div class="node data">
+    <span class="badge">Write-back</span>
+    <div class="title">Salesforce — live state for SDR-facing UI</div>
+    <div class="meta-line">score · tier · strongest signal · ai_hook · cadence · owner</div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- STAGE 3 -->
+  <div class="stage">
+    <div class="stage-header">
+      <span class="stage-num">Stage 3</span>
+      <span class="stage-title">Distributor</span>
+      <span class="stage-type">Owner-driven · Python + 1 LLM agent</span>
+    </div>
+    <div class="stage-body" style="padding: 0;">
+      <div class="lanes">
+
+        <!-- TIER 1 LANE -->
+        <div class="lane">
+          <div class="lane-header">
+            <span class="tier-tag t1">Tier 1</span>
+            <span class="owner">SDR-owned</span>
+            <span class="own-detail">High Fit + High Intent</span>
+          </div>
+          <div class="lane-block agent-block">
+            <div class="pill-row">
+              <span class="pill">Agent · 2 of 2</span>
+              <span class="b-name">LLM Hook Agent</span>
+            </div>
+            <div class="b-detail">Generates a 1–2 sentence personalized opener per Tier 1 account from signal evidence. ~250 calls/Monday · ~$0.001 each · retry + brand-safety QC · written to SF custom field <code>ai_hook</code>.</div>
+          </div>
+          <div style="font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; margin: 4px 0 6px;">Output destinations · same 8 columns</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="lane-block" style="margin: 0;">
+              <div class="b-name">Google Sheet</div>
+              <div class="b-detail">Per-territory · refreshed every Mon 6:30 AM. SDR's Monday-morning workspace · "Add to sequence" column editable.</div>
+            </div>
+            <div class="lane-block" style="margin: 0;">
+              <div class="b-name">SF Lead View</div>
+              <div class="b-detail">"My Tier 1 This Week" filter. Native CRM · same data, in-flow with the SDR's daily SF use.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- TIER 2 LANE -->
+        <div class="lane">
+          <div class="lane-header">
+            <span class="tier-tag t2">Tier 2</span>
+            <span class="owner">Automated</span>
+            <span class="own-detail">Low Fit + High Intent</span>
+          </div>
+          <div class="lane-block python-block">
+            <div class="pill-row">
+              <span class="pill">Python</span>
+              <span class="b-name">Token populator</span>
+            </div>
+            <div class="b-detail">Populates SF custom-field tokens per contact (<code>{{competitor_name}}</code>, <code>{{event_name}}</code>, <code>{{pages_visited}}</code>, etc.). Maps account → matching templated cadence. <strong>No LLM in this path.</strong></div>
+          </div>
+          <div class="lane-block">
+            <div class="b-name">Output destination</div>
+            <div class="b-detail"><strong>Amplemarket</strong> — direct push to one of <strong>10 templated cadences</strong> (one per signal type). Body copy owned 100% by sales leadership.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
 </body>
 </html>
