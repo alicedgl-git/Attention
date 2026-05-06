@@ -243,6 +243,52 @@
     margin-bottom: 4px;
   }
 
+  /* ARCH-CTA — slide 4 link box */
+  .arch-cta {
+    display: block;
+    margin-top: 32px;
+    padding: 24px 28px;
+    background: var(--accent-2);
+    border: 2px solid #c4b5fd;
+    border-radius: 14px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .arch-cta:hover {
+    background: #ddd6fe;
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .arch-cta .cta-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .arch-cta .cta-title {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+  .arch-cta .cta-detail {
+    font-size: 13px;
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+  .arch-cta .cta-detail code {
+    background: white;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    color: var(--accent);
+    border: 1px solid #c4b5fd;
+  }
+
   /* MATRIX */
   .matrix-wrap { display: grid; grid-template-columns: 120px 1fr 1fr; gap: 6px; align-items: stretch; }
   .matrix-axis-y { writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); }
@@ -403,13 +449,40 @@
     background: white;
     border: 1px solid var(--line);
     border-radius: 12px;
-    padding: 16px 18px;
+    padding: 22px 22px;
     border-top: 4px solid var(--accent);
   }
-  .week-card .week-num { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 4px; }
-  .week-card h4 { margin: 0 0 10px; font-size: 14px; font-weight: 700; }
-  .week-card ul { margin: 0; padding-left: 16px; font-size: 12px; line-height: 1.5; color: var(--ink-2); }
-  .week-card ul li { margin-bottom: 3px; }
+  .week-card .week-num { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 6px; }
+  .week-card h4 { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+
+  /* PHASE 2 ROADMAP ITEMS */
+  .phase2-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+  .phase2-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: white;
+    border: 1px solid #c4b5fd;
+    border-radius: 10px;
+  }
+  .phase2-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.06em;
+    background: var(--accent-2);
+    padding: 4px 8px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .phase2-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
 
   /* FOOTNOTES + UTIL */
   .footnote { font-size: 12px; color: var(--ink-3); margin-top: 16px; font-style: italic; }
@@ -733,7 +806,7 @@
 </section>
 
 
-<!-- ========== SLIDE 4 — PART 3a: ARCHITECTURE ========== -->
+<!-- ========== SLIDE 4 — PART 3a: SYSTEM DESIGN ========== -->
 <section class="slide">
   <div class="meta">
     <span class="brand">PART 3 · SYSTEM ARCHITECTURE</span>
@@ -741,69 +814,36 @@
   </div>
 
   <div class="slide-content">
-    <h1 class="headline" style="margin-bottom: 8px;">1 orchestrator + 3 Python stages + 1 LLM hook agent.</h1>
-    <p style="font-size: 13px; color: var(--ink-2); margin: 0 0 20px; font-weight: 500;">Scheduled cron · runs every Monday at 6 AM · end-to-end in under 30 minutes.</p>
+    <h1 class="headline" style="margin-bottom: 10px;">System design.</h1>
+    <p class="subhead" style="margin-bottom: 28px;">Scheduled Claude Code agent. Runs every Monday at 6 AM, end-to-end in under 30 minutes. Built entirely on Attention's existing stack.</p>
 
-    <div class="arch-diagram">
-
-      <!-- Inputs feeding the orchestrator -->
-      <div class="arch-row arch-inputs">
-        <div class="arch-node source">📥 Salesforce<br>50k ICP universe</div>
-        <div class="arch-arrow">→</div>
-        <div class="arch-node python-step">Exclusion Filter<br>(Python · deterministic)</div>
-        <div class="arch-arrow">→</div>
+    <div class="grid grid-4">
+      <div class="card">
+        <div class="label">Schedule</div>
+        <div class="big">Mon 6 AM</div>
+        <p>Cloud Scheduler cron · weekly batch</p>
       </div>
-
-      <!-- Orchestrator wrapping the 3 stages -->
-      <div class="arch-orchestrator">
-        <div class="arch-orchestrator-header">
-          <span class="agent-tag">⚡ AGENT 1</span>
-          <span><strong>Claude Code Orchestrator</strong></span>
-          <span class="orchestrator-role">runs every Monday 6 AM · retry · cross-stage supervision</span>
-        </div>
-        <div class="arch-stages">
-          <div class="arch-stage stage-python">
-            <div class="stage-header">
-              <span class="stage-tag">Stage 1</span>
-              <span class="type-tag python">Python ETL</span>
-            </div>
-            <h3 class="stage-title">Signal Collector</h3>
-            <p class="stage-desc">Fans 10+ APIs in parallel: Clay · RB2B · GA4 · LinkedIn Ads · Reddit Ads · Common Room · Crunchbase · G2 · Amplemarket · SF — writes to Snowflake (append-only).</p>
-            <div class="llm-tag inline">⚡ inline LLM classifier · sub-type (#5, #7)</div>
-          </div>
-          <div class="arch-stage-arrow">→</div>
-          <div class="arch-stage stage-python">
-            <div class="stage-header">
-              <span class="stage-tag">Stage 2</span>
-              <span class="type-tag python">Pure Python</span>
-            </div>
-            <h3 class="stage-title">Scorer</h3>
-            <p class="stage-desc">Reads Snowflake + SF metadata. Computes Fit + Intent + multi-signal bonus. Applies 2×2 matrix → Tier 1/2/3/4. Pure deterministic math; writes scores back to Salesforce.</p>
-          </div>
-          <div class="arch-stage-arrow">→</div>
-          <div class="arch-stage stage-hybrid">
-            <div class="stage-header">
-              <span class="stage-tag">Stage 3</span>
-              <span class="type-tag hybrid">Python + LLM</span>
-            </div>
-            <h3 class="stage-title">Distributor</h3>
-            <p class="stage-desc"><strong>Tier 1 (SDR-owned):</strong> LLM Hook Agent generates 1–2 sentence opener per account from signal evidence; written to SF <code style="font-size:10px;background:rgba(0,0,0,0.05);padding:0 3px;border-radius:3px;">ai_hook</code> custom field; pre-fills Amplemarket sequence step 1 when SDR marks Yes. <strong>Tier 2 (Auto-outbound):</strong> Python pushes contact to matching templated Amplemarket sequence with custom-field tokens. No LLM.</p>
-            <div class="llm-tag agent">⚡ Agent 2 · LLM Hook Agent (Tier 1 only)</div>
-          </div>
-        </div>
+      <div class="card">
+        <div class="label">Runtime</div>
+        <div class="big">&lt; 30 min</div>
+        <p>End-to-end pipeline run</p>
       </div>
-
-      <!-- Outputs -->
-      <div class="arch-row arch-outputs">
-        <div class="arch-arrow">→</div>
-        <div class="arch-node output">👁️ SF Lead View</div>
-        <div class="arch-node output">📊 Google Sheet</div>
-        <div class="arch-node output">📤 Amplemarket</div>
+      <div class="card">
+        <div class="label">Agents</div>
+        <div class="big">3</div>
+        <p>Orchestrator · Hook · Measurement</p>
       </div>
-
+      <div class="card">
+        <div class="label">Pipeline stages</div>
+        <div class="big">3</div>
+        <p>Python · deterministic · testable</p>
+      </div>
     </div>
 
-    <p class="footnote">Hard exclusion filter (pre-scoring) drops 5 to 8% of accounts: customers, active opps, churned less than 6 months ago, layoffs, already engaged in Amplemarket. Scoreable pool is roughly 45,000 to 47,000. Each stage idempotent and checkpointed. Snowflake is the append-only signal store, enabling Phase 2 ML training data. Total Monday runtime: under 30 minutes.</p>
+    <a class="arch-cta" href="system-architecture.html" target="_blank">
+      <div class="cta-eyebrow">Open the full diagram →</div>
+      <div class="cta-title">case-study/system-architecture.html</div>
+    </a>
   </div>
 </section>
 
@@ -820,7 +860,7 @@
 
     <div class="lead-mock">
       <div class="lead-mock-header">
-        <span>Salesforce Lead View · Google Sheet · same 8 columns, one source of truth (SF write-back)</span>
+        <span>Salesforce Lead View · Google Sheet</span>
         <span class="source-tag">Refreshed Mon 6:30 AM</span>
       </div>
       <table class="lead-table">
@@ -873,34 +913,30 @@
 
     <div class="hook-preview">
       <div class="hook-label">AI hook preview · Acme Sales Co.</div>
-      <div class="hook-body">"Hi Jane — your team checked /demo and /pricing this week. 45 days in as CRO + 80 reps scaling… most new sales leaders at that mark end up auditing the call-intel stack within Q1. Curious what you're seeing."</div>
-      <div class="hook-meta">Generated by Stage 3 LLM Hook Agent · stored in SF custom field <code>ai_hook</code> · pre-fills Amplemarket step 1 when SDR marks Yes · SDR composes the rest. Hook is generated only for SDR-owned rows; if SDR marks "No," the cadence cell stays blank.</div>
+      <div class="hook-body">"Hi Jane, your team had multiple sessions on /demo and /pricing this week. Six weeks in as CRO with 80 reps scaling, talk-track consistency is usually where call-intelligence earns its keep first. Would 15 minutes next week be useful?"</div>
+      <div class="hook-meta">Generated by Stage 3 LLM Hook Agent · stored in SF custom field <code>ai_hook</code></div>
     </div>
 
-    <div class="grid grid-3" style="gap: 16px; margin-top: 16px;">
-      <div class="card">
-        <div class="label">Salesforce Lead View</div>
-        <h3 style="margin-bottom: 6px;">Native, in-CRM</h3>
-        <p>Per-rep filtered list view, lives inside the SDR's existing Salesforce home. Used for daily triage, account-record context, mass-update. AI hook visible on the account detail page. Read-only on the 8 columns.</p>
-      </div>
-      <div class="card accent">
-        <div class="label">Google Sheet</div>
-        <h3 style="margin-bottom: 6px;">Editable · workflow by owner</h3>
-        <p style="margin-top: 4px;"><strong>Owner = SDR (Tier 1):</strong> AI hook pre-filled in Amplemarket step 1; SDR writes the email in their own voice using the hook + signal context.</p>
-        <p style="margin-top: 4px;"><strong>Owner = Automated (Tier 2):</strong> Apps Script pushes contact to the matching templated cadence from the library. SDR can reroute by editing the cadence cell before marking Yes.</p>
-      </div>
-      <div class="card">
-        <div class="label">Cadence library · 10 templated</div>
-        <div class="cadence-section-label templated" style="font-size: 9.5px;">Auto-outreach (Tier 2) only — generic Amplemarket sequence + custom-field tokens</div>
-        <table class="cadence-list" style="margin-bottom: 10px;">
-          <tr><td>Website visits</td><td>Sales leadership change</td></tr>
-          <tr><td>Webinar / event followup</td><td>Sales team scaling</td></tr>
-          <tr><td>Ad interaction followup</td><td>Buyer pain / topical</td></tr>
-          <tr><td>Slack community</td><td>Competitor usage</td></tr>
-          <tr><td>Competitor churn</td><td>Recent funding</td></tr>
-        </table>
-        <div class="cadence-section-label ai-assisted" style="font-size: 9.5px;">Tier 1 (SDR) → Personalized · AI hook + SDR composition (no library cadence)</div>
-      </div>
+    <div class="card" style="margin-top: 16px;">
+      <div class="label">Cadence library · 10 templated</div>
+      <div class="cadence-section-label templated" style="font-size: 9.5px;">Auto-outreach (Tier 2) only — generic Amplemarket sequence + custom-field tokens</div>
+      <table class="cadence-list" style="margin: 8px 0 10px;">
+        <tr>
+          <td>Website visits</td>
+          <td>Webinar / event followup</td>
+          <td>Ad interaction followup</td>
+          <td>Slack community</td>
+          <td>Competitor churn</td>
+        </tr>
+        <tr>
+          <td>Sales leadership change</td>
+          <td>Sales team scaling</td>
+          <td>Buyer pain / topical</td>
+          <td>Competitor usage</td>
+          <td>Recent funding</td>
+        </tr>
+      </table>
+      <div class="cadence-section-label ai-assisted" style="font-size: 9.5px;">Tier 1 (SDR) → Personalized · AI hook + SDR composition (no library cadence)</div>
     </div>
 
     <p class="footnote"><strong>Strongest signal</strong> = highest-weight signal fired this week (Part 1 ranking) → drives the cadence suggestion. <strong>Owner</strong> drives the workflow: SDR (Tier 1) → AI hook + personal craft. Automated (Tier 2) → templated cadence library auto-fires. <strong>Score</strong> = combined Intent × Fit.</p>
@@ -922,70 +958,54 @@
       <div class="week-card">
         <div class="week-num">Week 1</div>
         <h4>Talk to the sales team</h4>
-        <ul>
-          <li>How do they cut territory today?</li>
-          <li>How do they run outbound today — what works, what's broken?</li>
-          <li>Audit where the data sits: SF objects, Clay workflows, Snowflake schemas, Amplemarket setup</li>
-          <li>Walk the team through the project to validate the approach</li>
-        </ul>
       </div>
       <div class="week-card">
         <div class="week-num">Week 2</div>
         <h4>Build &amp; test myself</h4>
-        <ul>
-          <li>Wire Stage 1 — signal collection across 10+ APIs</li>
-          <li>Wire Stage 2 — scoring math + 2×2 matrix</li>
-          <li>Wire Stage 3 — LLM hook agent + Amplemarket cadence connections</li>
-          <li>Test end-to-end on a 100-account sample · validate AI hook quality</li>
-        </ul>
       </div>
       <div class="week-card">
         <div class="week-num">Week 3</div>
         <h4>First real-time test</h4>
-        <ul>
-          <li><strong>Monday:</strong> full pipeline runs on the pilot territory</li>
-          <li>Daily 15-min standup with pilot SDRs</li>
-          <li>Iterate on signals, hooks, cadences based on SDR feedback</li>
-          <li>Friday: first weekly report</li>
-        </ul>
       </div>
       <div class="week-card">
         <div class="week-num">Week 4</div>
         <h4>System ready</h4>
-        <ul>
-          <li>Pipeline running smoothly · no critical bugs</li>
-          <li>Onboard remaining SDRs in pilot territory</li>
-          <li>Lock the measurement dashboard (Looker / Mode → Snowflake + SF)</li>
-        </ul>
       </div>
     </div>
 
     <div class="grid grid-3" style="margin-top: 22px;">
       <div class="card">
-        <div class="label">Measurement · 5 KPIs</div>
+        <div class="label">Measurement · KPIs</div>
         <ul>
-          <li><strong>Scored accounts → meetings booked</strong> — overall system conversion</li>
-          <li><strong>Reply rate</strong> per cadence + per signal — message resonance + signal quality</li>
-          <li><strong>Sequencing rate</strong> (% of Tier 1 actually actioned by SDRs) — tool adoption</li>
-          <li><strong>Coverage %</strong> (% of accounts firing ≥1 signal weekly) — pipeline health</li>
-          <li><strong>Pipeline → closed-won</strong> (90d cohort) — revenue impact</li>
+          <li>Meetings booked</li>
+          <li>Reply rate per cadence</li>
+          <li>Reply rate per signal</li>
+          <li>Sequencing rate</li>
+          <li>Coverage %</li>
+          <li>Pipeline generated</li>
+          <li>Closed-won rate</li>
         </ul>
-        <p style="font-size: 11px; color: var(--ink-3); margin-top: 8px; line-height: 1.4;">Tracked in a Looker (or Mode) dashboard pulling from Snowflake (signal + scoring history) and Salesforce (outcomes + adoption). Refresh daily.</p>
       </div>
       <div class="card">
-        <div class="label">Feedback loops · day 1</div>
+        <div class="label">Feedback loops</div>
         <ul>
-          <li><strong>Cadence:</strong> per-cadence reply rate (from Amplemarket webhooks) → A/B variants, retire weak ones</li>
-          <li><strong>Agent:</strong> LLM hook quality tracked per reply → prompt tuning</li>
-          <li><strong>Outcome:</strong> AE tags signal that drove closed-won → trains Phase 2 weight calibration</li>
-          <li><strong>Human:</strong> weekly SDR check-in · monthly leadership · quarterly CEO/CRO</li>
+          <li><strong>Human:</strong> weekly SDR check-in</li>
+          <li><strong>Measurement:</strong> KPIs analysis</li>
+          <li><strong>Agent:</strong> track AI hook quality</li>
         </ul>
       </div>
       <div class="card accent">
-        <div class="label">Phase 2 · scoring on real data</div>
-        <h3 style="margin-bottom: 6px;">Past + ongoing data → smarter weights</h3>
-        <p>After 90 days of pilot data, replace the heuristic Part 1 weights with empirical ones learned via logistic regression on <code style="background:rgba(0,0,0,0.05);padding:1px 4px;border-radius:3px;font-size:11px;">signals fired → won/lost</code>.</p>
-        <p style="margin-top: 6px;">Refresh quarterly as more outcomes accumulate.</p>
+        <div class="label">Phase 2</div>
+        <div class="phase2-list">
+          <div class="phase2-item">
+            <span class="phase2-num">01</span>
+            <span class="phase2-name">Smarter weights</span>
+          </div>
+          <div class="phase2-item">
+            <span class="phase2-num">02</span>
+            <span class="phase2-name">SF Lead View</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>

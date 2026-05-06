@@ -395,6 +395,152 @@
     font-size: 12px;
   }
   .footnote strong { color: var(--text); }
+
+  /* MEASUREMENT LOOP */
+  .meas-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 1080px;
+    margin: 28px 0 6px;
+    color: var(--text-3);
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .meas-divider::before, .meas-divider::after {
+    content: "";
+    flex: 1;
+    height: 0;
+    border-top: 1px dashed var(--border-bright);
+  }
+  .meas-block {
+    border: 1.5px dashed var(--agent-border);
+    background: var(--agent-bg);
+    border-radius: 14px;
+    padding: 0;
+    width: 100%;
+    max-width: 1080px;
+    overflow: hidden;
+  }
+  .meas-header {
+    padding: 14px 22px;
+    border-bottom: 1px dashed var(--agent-border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(124, 92, 255, 0.05);
+  }
+  .meas-header .pill {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    background: var(--agent);
+    color: white;
+  }
+  .meas-header .title {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .meas-header .tagline {
+    color: var(--text-3);
+    font-size: 12px;
+    margin-left: auto;
+  }
+  .meas-body { padding: 16px 22px; }
+  .meas-body .desc {
+    color: var(--text-2);
+    font-size: 13px;
+    margin: 0 0 14px;
+    line-height: 1.55;
+  }
+  .meas-body .desc strong { color: var(--text); }
+
+  .meas-section-label {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-3);
+    margin: 0 0 6px;
+  }
+  .kpi-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .kpi-list .kpi {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11.5px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .tools-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .tool {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    padding: 10px 12px;
+    text-align: center;
+  }
+  .tool .tname {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .tool .twhat {
+    font-size: 10.5px;
+    color: var(--text-3);
+    margin-top: 3px;
+    line-height: 1.35;
+  }
+  .triggers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .trigger-card {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .trigger-card .when {
+    font-size: 10.5px;
+    color: var(--agent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .trigger-card .what { font-size: 13px; font-weight: 700; color: var(--text); }
+  .trigger-card .detail { font-size: 11.5px; color: var(--text-2); margin-top: 4px; line-height: 1.45; }
+  .trigger-card code { font-size: 11px; }
+  .reads-note {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-left: 2px solid var(--agent-border);
+    color: var(--text-2);
+    font-size: 11.5px;
+    line-height: 1.5;
+  }
+  .reads-note strong { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -407,7 +553,6 @@
     <span>System Design + GTM Integration</span>
   </div>
   <h1>Signal-Based Outreach System — Architecture</h1>
-  <p class="sub"><strong>Scheduled Claude Code agent · runs every Monday at 6 AM · end-to-end in under 30 minutes.</strong> One orchestrator + three Python pipeline stages + one LLM hook agent. Honest agent count: 2. The pipeline reads from Salesforce, scores accounts on Fit × Intent, and routes them by owner — Tier 1 to a SDR for personalized compose, Tier 2 to automated templated outreach.</p>
 </header>
 
 <!-- LEGEND -->
@@ -434,7 +579,7 @@
     </div>
     <div class="arrow-right"></div>
     <div class="node agent">
-      <span class="badge">Agent · 1 of 2</span>
+      <span class="badge">Agent · 1 of 3</span>
       <div class="title">Claude Code Orchestrator</div>
       <div class="meta-line">Runs the 3 stages in sequence · retry · error-handling</div>
       <div class="meta-line">Container shuts down after run · ~$3/month total infra</div>
@@ -450,6 +595,15 @@
     <div class="meta-line">JWT bearer auth · service account · paginated 2k rows</div>
     <div class="meta-line">Filters: ICP gate (industry · employees ≥50) · territory · customer/opp/churn/layoff state · already-engaged-in-Amplemarket</div>
     <div class="result">→ ~40k available account IDs</div>
+  </div>
+
+  <div class="arrow-down"></div>
+
+  <!-- CLAY ENRICHMENT -->
+  <div class="node data">
+    <span class="badge">Enrichment</span>
+    <div class="title">Clay — Enrichment Layer</div>
+    <div class="meta-line">Refreshes firmographics on the ~40k accounts: industry · headcount · funding stage · sales motion · tech stack · exec roster</div>
   </div>
 
   <div class="arrow-down"></div>
@@ -505,7 +659,7 @@
           <div class="score-card">
             <div class="name">Fit Score · 0–100</div>
             <div class="formula">industry tier (50) + sales motion intensity (30) + growth/funding stage (20)</div>
-            <div class="meta">refreshed monthly</div>
+            <div class="meta">reads Clay-enriched firmographics from SF · refreshed monthly</div>
           </div>
           <div class="score-card">
             <div class="name">Intent Score · 0–100</div>
@@ -575,7 +729,7 @@
           </div>
           <div class="lane-block agent-block">
             <div class="pill-row">
-              <span class="pill">Agent · 2 of 2</span>
+              <span class="pill">Agent · 2 of 3</span>
               <span class="b-name">LLM Hook Agent</span>
             </div>
             <div class="b-detail">Generates a 1–2 sentence personalized opener per Tier 1 account from signal evidence. ~250 calls/Monday · ~$0.001 each · retry + brand-safety QC · written to SF custom field <code>ai_hook</code>.</div>
@@ -615,6 +769,67 @@
           </div>
         </div>
 
+      </div>
+    </div>
+  </div>
+
+  <!-- MEASUREMENT LOOP — separated from the pipeline -->
+  <div class="meas-divider">
+    <span>Measurement loop · runs separately</span>
+  </div>
+
+  <div class="meas-block">
+    <div class="meas-header">
+      <span class="pill">Agent · 3 of 3</span>
+      <span class="title">Measurement Agent</span>
+      <span class="tagline">read-only · closes the loop on the system</span>
+    </div>
+    <div class="meas-body">
+      <p class="meas-section-label">KPIs tracked</p>
+      <div class="kpi-list">
+        <span class="kpi">Meetings booked</span>
+        <span class="kpi">Reply rate per cadence</span>
+        <span class="kpi">Reply rate per signal</span>
+        <span class="kpi">Sequencing rate</span>
+        <span class="kpi">Coverage %</span>
+        <span class="kpi">Pipeline generated</span>
+        <span class="kpi">Closed-won rate</span>
+      </div>
+
+      <p class="meas-section-label">Reads from</p>
+      <div class="tools-row">
+        <div class="tool">
+          <div class="tname">Salesforce</div>
+          <div class="twhat">meetings · opps · sequencing rate · closed-won</div>
+        </div>
+        <div class="tool">
+          <div class="tname">Amplemarket</div>
+          <div class="twhat">reply rate per cadence · open / send rates</div>
+        </div>
+        <div class="tool">
+          <div class="tname">Snowflake</div>
+          <div class="twhat">coverage % · reply rate per signal</div>
+        </div>
+        <div class="tool">
+          <div class="tname">Attention</div>
+          <div class="twhat">call activity · sentiment · talk-track adherence</div>
+        </div>
+        <div class="tool">
+          <div class="tname">Slack</div>
+          <div class="twhat">posts the weekly summary report</div>
+        </div>
+      </div>
+
+      <p class="meas-section-label">Triggers + outputs</p>
+      <div class="triggers">
+        <div class="trigger-card">
+          <div class="when">On-demand</div>
+          <div class="what">Claude skill <code>/state-of-system</code></div>
+        </div>
+        <div class="trigger-card">
+          <div class="when">Scheduled · Friday 3 PM</div>
+          <div class="what">Weekly summary → <code>#gtm-outbound-pulse</code></div>
+        </div>
       </div>
     </div>
   </div>
